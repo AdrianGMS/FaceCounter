@@ -24,7 +24,7 @@ total_recognitions = 0
 for filename in os.listdir(UNKNOWN_FACES_DIR):
     print(filename)
     image=face_recognition.load_image_file(f"{UNKNOWN_FACES_DIR}/{filename}")
-    #image = cv2.resize(image, (0, 0), fx=0.25, fy=0.25)
+    image = cv2.resize(image, (0, 0), fx=0.25, fy=0.25)
     locations = face_recognition.face_locations(image, model=MODEL)
     encoding = face_recognition.face_encodings(image, locations)
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
