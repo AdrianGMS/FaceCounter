@@ -9,10 +9,10 @@ import os
 #os.mkdir(ruta_nueva_carpeta)
 
 # Ruta del video a procesar
-video_path = "./Videos/Elvis.mp4"
+video_path = "./Videos/Natalia.mp4"
 
 # Directorio donde se guardarán los frames extraídos del video
-frames_dir = "./caras_conocidas/Hamill"
+frames_dir = "./caras_conocidas/Natalia"
 
 # Crear directorio si no existe
 if not os.path.exists(frames_dir):
