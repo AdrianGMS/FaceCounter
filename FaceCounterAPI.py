@@ -4,7 +4,7 @@ import cv2
 import os
 import psycopg2
 
-UNKNOWN_FACES_DIR = "./caras_desconocidas2"
+UNKNOWN_FACES_DIR = "./caras_desconocidas4"
 TOLERANCE = 0.5
 FRAME_THICKNESS = 3
 FONT_THICKNESS = 2
