@@ -4,7 +4,7 @@ import cv2
 import pickle
 
 KNOWN_FACES_DIR = "./caras_conocidas"
-TOLERANCE = 0.6
+TOLERANCE = 0.5
 MODEL = "cnn"
 
 print("Entrenando...")

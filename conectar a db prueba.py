@@ -12,13 +12,12 @@ conn = psycopg2.connect(
 cur = conn.cursor()
 
 # Ejecutar una consulta
-cur.execute("SELECT * FROM asistencia")
+cur.execute("UPDATE asistencia SET d_asistencia = 'Ausente'")
+conn.commit()
 
 # Obtener los resultados de la consulta
-rows = cur.fetchall()
+#rows = cur.fetchall()
 
-for row in rows:
-    print(row)
 # Cerrar la conexión
 cur.close()
 conn.close()

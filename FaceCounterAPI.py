@@ -3,6 +3,7 @@ import pickle
 import cv2
 import os
 import psycopg2
+import csv
 
 UNKNOWN_FACES_DIR = "./caras_desconocidas4"
 TOLERANCE = 0.5
@@ -18,9 +19,13 @@ conn = psycopg2.connect(
     password="tesis202301"
 )
 
+# Establecer el código del curso
+c_codigo_curso = 1
+
 def marcar_ausente_todos():
     cur = conn.cursor()
-    cur.execute("UPDATE asistencia SET d_asistencia = 'Ausente'")
+    cur.execute("UPDATE asistencia SET d_asistencia = 'Ausente' WHERE c_codigo_curso = %s", 
+                (c_codigo_curso,))
     conn.commit()
     cur.close()
 
@@ -66,13 +71,15 @@ for filename in os.listdir(UNKNOWN_FACES_DIR):
 
             # Actualizar la columna d_asistencia en la tabla asistencia
             cur = conn.cursor()
-            cur.execute("SELECT * FROM asistencia WHERE d_nombre_alumno = %s", (match,))
+            cur.execute("SELECT * FROM asistencia WHERE d_nombre_alumno = %s AND c_codigo_curso = %s",
+                         (match, c_codigo_curso))
 
             # Obtener los resultados de la consulta
             row = cur.fetchone()
             if row:
                 print(f"Before: {row[3]}")
-                cur.execute("UPDATE asistencia SET d_asistencia = %s WHERE d_nombre_alumno = %s", ("Presente", match))
+                cur.execute("UPDATE asistencia SET d_asistencia = %s WHERE d_nombre_alumno = %s AND c_codigo_curso = %s",
+                             ("Presente", match, c_codigo_curso))
                 conn.commit()
                 print(f"After: Presente")
             cur.close()
@@ -85,3 +92,21 @@ for filename in os.listdir(UNKNOWN_FACES_DIR):
 
 accuracy = correct_recognitions / total_recognitions * 100
 print(f"Accuracy: {accuracy:.2f}%")
+
+cur = conn.cursor()
+cur.execute("SELECT d_nombre_alumno, d_asistencia FROM asistencia WHERE c_codigo_curso = %s",
+            (c_codigo_curso,))
+results = cur.fetchall()
+cur.close()
+#Guardar resultados en TXT
+with open("asistencia.txt", "w") as f:
+    for row in results:
+        f.write(f"{row[0]}: {row[1]}\n")
+#Guardar resultados en CSV
+with open('asistencia.csv', 'w', newline='') as file:
+    writer = csv.writer(file)
+    writer.writerow(['Nombre', 'Asistencia'])
+    for row in results:
+        writer.writerow(row)
+conn.close()
+
