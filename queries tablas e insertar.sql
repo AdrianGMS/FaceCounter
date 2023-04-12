@@ -78,7 +78,6 @@ VALUES
 INSERT INTO curso (d_nombre, d_codigo_seccion, d_dia, z_hora, c_codigo_profesor)
 VALUES 
 	('Taller de Proyecto 2', '101A', 'Martes', '16:00', 1),
-	('Taller de Proyecto 2', '101A', 'Jueves', '16:00', 1),
 	('Matematica computacional', '101A', 'Lunes', '9:00', 2);
 
 --Insertar curso alumnos
@@ -103,27 +102,15 @@ VALUES (1, 1),
 	   (2, 12);
 	   
 
-INSERT INTO asistencia (d_nombre_alumno, c_codigo_curso_alumno, d_asistencia, c_codigo_curso)
-SELECT a.d_nombre, ca.c_codigo_curso_alumno, Ausente, ca.c_codigo_curso
-FROM alumno a
-JOIN curso_alumno ca ON a.c_codigo_alumno = ca.c_codigo_alumno
-WHERE ca.c_codigo_curso = 1 OR ca.c_codigo_curso = 2;
 
+
+
+--Insertar asistencias
 INSERT INTO asistencia (d_nombre_alumno, c_codigo_curso_alumno, d_asistencia, c_codigo_curso)
 SELECT a.d_nombre, ca.c_codigo_curso_alumno, 'Ausente', ca.c_codigo_curso
 FROM alumno a
 JOIN curso_alumno ca ON a.c_codigo_alumno = ca.c_codigo_alumno
 WHERE ca.c_codigo_curso IN (SELECT DISTINCT c_codigo_curso FROM curso_alumno);
-
-
---Insertar asistencias
-INSERT INTO asistencia (d_nombre_alumno, c_codigo_curso_alumno, d_asistencia)
-VALUES ('Juan Perez', 1, ausente),
-       ('Hamill', 2, ausente),
-       ('Adrian', 3, ausente),
-	   ('Aldo', 4, ausente),
-	   ('Natalia', 5, ausente),
-	   ('Elvis', 6, ausente);
 
 --Dejar tablas vacias
 DELETE FROM asistencia;
@@ -131,9 +118,16 @@ DELETE FROM asistencia;
 --Eliminar elementos especificos de tablas
 DELETE FROM asistencia WHERE d_nombre_alumno = 'Juan Perez';
 
+<<<<<<< HEAD
 
 SELECT d_nombre_alumno, d_asistencia 
 FROM asistencia 
 WHERE c_codigo_curso = 1
 
+=======
+select d_nombre_alumno, d_asistencia
+from asistencia
+where c_codigo_curso = 1
+	   
+>>>>>>> 05d650d5fa902cc4c06a420dc9e7730c92cc0b70
 	   

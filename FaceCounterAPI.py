@@ -14,9 +14,12 @@ MODEL = "cnn"
 # Conectar a la base de datos
 conn = psycopg2.connect(
     host="localhost",
-    database="facecounter",
+    database="db_facecounter",
+    #database="facecounter",
     user="postgres",
-    password="tesis202301"
+    #password="tesis202301"
+    password="admin"
+
 )
 
 # Establecer el código del curso
