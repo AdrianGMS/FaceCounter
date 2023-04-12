@@ -131,5 +131,9 @@ DELETE FROM asistencia;
 --Eliminar elementos especificos de tablas
 DELETE FROM asistencia WHERE d_nombre_alumno = 'Juan Perez';
 
-	   
+
+SELECT d_nombre_alumno, d_asistencia 
+FROM asistencia 
+WHERE c_codigo_curso = 1
+
 	   

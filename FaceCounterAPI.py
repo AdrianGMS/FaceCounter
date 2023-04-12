@@ -87,7 +87,7 @@ for filename in os.listdir(UNKNOWN_FACES_DIR):
         total_recognitions += 1
     
     cv2.imshow(filename, image)
-    cv2.waitKey(10000)
+    cv2.waitKey(0)
     #cv2.destroyWindow(filename)
 
 accuracy = correct_recognitions / total_recognitions * 100
