@@ -5,6 +5,8 @@ CREATE TABLE Profesor (
     d_correo VARCHAR(50) NOT NULL,
     n_telefono VARCHAR(15) NOT NULL
 );
+ALTER TABLE Profesor ADD COLUMN d_contrasena VARCHAR(50);
+ALTER TABLE Profesor ALTER COLUMN d_contrasena SET NOT NULL;
 
 CREATE TABLE Curso (
     c_codigo_curso SERIAL PRIMARY KEY,
@@ -51,11 +53,11 @@ ALTER TABLE asistencia ADD COLUMN c_codigo_curso INTEGER;
 ///////
 
 --Insertar profesores
-INSERT INTO profesor (d_nombre, d_apellido, d_correo, n_telefono) 
+INSERT INTO profesor (d_nombre, d_apellido, d_correo, n_telefono, d_contrasena) 
 VALUES
-	('Willy', 'Pérez', 'willyperez@email.com', '123456789'),
-	('Julio', 'Sanchez', 'juliosanchez@email.com', '123456789'),
-	('Riccardo', 'Mora', 'riccardomora@email.com', '123456789');
+	('Willy', 'Pérez', 'willyperez@email.com', '123456789', 'contrasena'),
+	('Julio', 'Sanchez', 'juliosanchez@email.com', '123456789', 'contrasena'),
+	('Riccardo', 'Mora', 'riccardomora@email.com', '123456789', 'contrasena');
 
 --	Insertar alumno
 INSERT INTO Alumno (d_nombre, d_codigo, d_urlvideo)
