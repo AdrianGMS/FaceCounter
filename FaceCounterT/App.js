@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button, View, Text, Image, ScrollView } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer';
 import { NavigationContainer } from '@react-navigation/native';
@@ -6,15 +6,15 @@ import { StyleSheet, TextInput, Pressable, onPress, Dimensions} from 'react-nati
 import { ImageBackground } from 'react-native';
 import MenuButtonItem from './components/MenuButtonItem';
 import { Searchbar } from 'react-native-paper';
+import { MaterialIcons } from '@expo/vector-icons';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getFirestore } from "firebase/firestore";
 
-// Import the functions you need from the SDKs you need
+// Import the functions you need from the Firebase SDKs
 import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getFirestore, collection, getDocs } from 'firebase/firestore';
 
-// Your web app's Firebase configuration
+// TODO: Replace the following with your app's Firebase project configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBvlvru-JGiHEHKce3e_AFyV3qcpKBBmuo",
   authDomain: "facecounter-7bdad.firebaseapp.com",
@@ -26,16 +26,28 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
+// Render the app component
 
-const db = getFirestore();
 console.log("Conexión exitosa:", db);
 
 const image = { uri: "https://i.ibb.co/MRhBzY9/Login.png" };
 const image2 = { uri: "https://i.ibb.co/kBsHbfc/Fondo.png"}; 
+const imageback = {uri: "https://cdn-icons-png.flaticon.com/512/32/32170.png?w=1060&t=st=1682023952~exp=1682024552~hmac=8b071115434b9571dd7b8e6dfa30c3199f9644a0cd39895cc98820ddd888154a"};
 
 
 const styles = StyleSheet.create({
+
+  //Boton Go Back
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    height: 60,
+    backgroundColor: '#FFFFFF',
+  },
+  
   container: {
     flex: 1,
     backgroundColor: 'white',
@@ -118,8 +130,8 @@ const styles = StyleSheet.create({
     letterSpacing: 0.25,
     color: 'black',
     padding: 4,
-    marginTop:5,
-    paddingLeft:20  
+    marginTop: 5,
+    paddingLeft: 20  
   },
   containerprofile: {
     backgroundColor: 'white'
@@ -257,6 +269,11 @@ function PasswordScreen({ navigation }) {
     <View>
       <ImageBackground source={image2} resizeMode="stretch" style={styles.image}>
      </ImageBackground>
+     <View style={styles.header}>
+        <Pressable onPress={() => navigation.navigate('Home')}>
+          <MaterialIcons name="arrow-back" size={50} style={{ width: 55, height: 40 }} color="black" />
+        </Pressable>
+      </View>
      <Text style={styles.textprofile} >Contraseña Anterior</Text>
       <TextInput style={styles.inputprofile}
       placeholder='ContraseñaAnterior'/>
@@ -287,6 +304,11 @@ function HelpScreen({ navigation }) {
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center'}}>
       <ImageBackground source={image2} resizeMode="stretch" style={styles.image}>
      </ImageBackground>
+     <View style={styles.header}>
+        <Pressable onPress={() => navigation.navigate('Home')}>
+          <MaterialIcons name="arrow-back" size={50} style={{ width: 55, height: 40 }} color="black" />
+        </Pressable>
+      </View>
       <Text>AYUDA!</Text>
       <Button 
       onPress={() => navigation.goBack()}
@@ -300,6 +322,7 @@ function ProfileScreen({ navigation }) {
     <View>
       <ImageBackground source={image2} resizeMode="stretch" style={styles.image}>
      </ImageBackground>
+     
       <Text style={styles.textprofile} >Nombres</Text>
       <TextInput style={styles.inputprofile}
       placeholder='Nombre'/>
@@ -319,69 +342,101 @@ function ProfileScreen({ navigation }) {
   );
 }
 
-function Home({navigation}) {
-  return (
-    <View>
-    <ImageBackground source={image2} resizeMode="stretch" style={styles.image}>
-     </ImageBackground>
-     <View style={{alignItems: 'center'}}>
-     <Searchbar 
-      style = {styles.searchBar}
-      placeholder="Buscar Aula"
-    />
-     </View>
-     
-    <ScrollView>
-    <Pressable style={styles.buttonhome} onPress={() => navigation.navigate('Classroom')}>
+function Home({ navigation }) {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredPressables = [
+    <Pressable key="1" style={styles.buttonhome} onPress={() => 
+    navigation.navigate('Classroom', { title: 'Programación SW5-964', 
+    body: ['Día: Lunes', 'Horario:13-00-15:00', 'Nro de Alumnos: 18'] })}>
       <Text style={styles.texttitle}>Programación SW5-964</Text>
       <Text style={styles.textbody}>Día: Lunes</Text>
       <Text style={styles.textbody}>Horario:13-00-15:00</Text>
       <Text style={styles.textbtn}>Nro de Alumnos: 18</Text>
-    </Pressable>
-    <Pressable style={styles.buttonhome} onPress={() => navigation.navigate('Classroom')}>
+    </Pressable>,
+    <Pressable key="2" style={styles.buttonhome} onPress={() =>
+      navigation.navigate('Classroom', { title: 'Programación SYH-811', 
+      body: ['Día: Lunes', 'Horario:13-00-15:00', 'Nro de Alumnos: 14'] })}>
       <Text style={styles.texttitle}>Programación SYH-811</Text>
       <Text style={styles.textbody}>Día: Lunes</Text>
       <Text style={styles.textbody}>Horario:13-00-15:00</Text>
       <Text style={styles.textbtn}>Nro de Alumnos: 14</Text>
-    </Pressable>
-    <Pressable style={styles.buttonhome} onPress={() => navigation.navigate('Classroom')}>
+    </Pressable>,
+    <Pressable key="3" style={styles.buttonhome} onPress={() =>
+      navigation.navigate('Classroom', { title: 'Algoritmos y Estructuras de datos SZ0-395', 
+      body: ['Día: Martes', 'Horario:13-00-15:00', 'Nro de Alumnos: 20'] })}>
       <Text style={styles.texttitle}>Algoritmos y Estructuras de datos SZ0-395</Text>
       <Text style={styles.textbody}>Día: Martes</Text>
       <Text style={styles.textbody}>Horario:13-00-15:00</Text>
       <Text style={styles.textbtn}>Nro de Alumnos: 20</Text>
-    </Pressable>
-    <Pressable style={styles.buttonhome} onPress={() => navigation.navigate('Classroom')}>
+    </Pressable>,
+    <Pressable key="4" style={styles.buttonhome} onPress={() => 
+      navigation.navigate('Classroom', { title: 'Complejidad Algoritmica SZZ-980', 
+      body: ['Día: Lunes', 'Horario:13-00-15:00', 'Nro de Alumnos: 18'] })}>
       <Text style={styles.texttitle}>Complejidad Algoritmica SZZ-980</Text>
       <Text style={styles.textbody}>Día: Lunes</Text>
       <Text style={styles.textbody}>Horario:13-00-15:00</Text>
       <Text style={styles.textbtn}>Nro de Alumnos: 18</Text>
-    </Pressable>
-    <Pressable style={styles.buttonhome} onPress={() => navigation.navigate('Classroom')}>
+    </Pressable>,
+    <Pressable key="5" style={styles.buttonhome} onPress={() => 
+      navigation.navigate('Classroom', { title: 'IHC SW5-96', 
+      body: ['Día: Jueves', 'Horario:13-00-15:00', 'Nro de Alumnos: 18'] })}>
       <Text style={styles.texttitle}>IHC SW5-964</Text>
       <Text style={styles.textbody}>Día: Jueves</Text>
       <Text style={styles.textbody}>Horario:13-00-15:00</Text>
       <Text style={styles.textbtn}>Nro de Alumnos: 18</Text>
-    </Pressable>
-    <Pressable style={styles.buttonhome} onPress={() => navigation.navigate('Classroom')}>
+    </Pressable>,
+    <Pressable key="6" style={styles.buttonhome} onPress={() => 
+      navigation.navigate('Classroom', { title: 'Redes SW5-964', 
+      body: ['Día: Viernes', 'Horario:21-00-23:00', 'Nro de Alumnos: 18'] })}>
       <Text style={styles.texttitle}>Redes SW5-964</Text>
       <Text style={styles.textbody}>Día: Viernes</Text>
       <Text style={styles.textbody}>Horario:21-00-23:00</Text>
       <Text style={styles.textbtn}>Nro de Alumnos: 18</Text>
-    </Pressable>
-    </ScrollView>
-   
-    </View>
-  );
+</Pressable>
+];
+
+const handleSearch = (query) => {
+setSearchQuery(query);
+};
+
+const filteredPressablesFiltered = filteredPressables.filter((pressable) =>
+pressable.props.children[0].props.children.toLowerCase().includes(searchQuery.toLowerCase())
+);
+
+return (
+<View style={styles.container}>
+<View style={styles.searchContainer}>
+<Searchbar
+       placeholder="Buscar clase"
+       onChangeText={handleSearch}
+       value={searchQuery}
+       style={styles.searchBar}
+     />
+</View>
+<ScrollView>
+{filteredPressablesFiltered}
+</ScrollView>
+</View>
+);
 }
-function Classroom({navigation}){
+function Classroom({navigation, route}){
+  const { title, body } = route.params;
   return(
+    
     <View>
      <ImageBackground source={image2} resizeMode="stretch" style={styles.image}>
-     </ImageBackground>
-     <Text style={styles.texttitlec}>Programación SW5-964</Text>
-     <Text style={styles.textbodyc}>Nro de Alumnos: 18</Text>
-     <Text style={styles.textbodyc}>Día: Lunes</Text>
-     <Text style={styles.textbodyc}>Horario: 13:00-15:00  </Text>
+     <View style={styles.header}>
+        <Pressable onPress={() => navigation.navigate('Home')}>
+          <MaterialIcons name="arrow-back" size={50} style={{ width: 55, height: 40 }} color="black" />
+        </Pressable>
+      </View>
+      <Text style={styles.texttitlec}>{title}</Text>
+        {body.map((text, index) => (
+          <Text key={index} style={styles.textbodyc}>
+            {text}
+          </Text>
+        ))}
      <View style={styles.containerprofile}>
       <Pressable style={styles.buttonprofile} onPress={() => navigation.navigate('Home')}>
         <Text style={styles.textbtn}>Tomar Foto</Text>
@@ -392,33 +447,35 @@ function Classroom({navigation}){
         <Text style={styles.textbtn}>Seleccionar Foto</Text>
       </Pressable>
       </View>
+     </ImageBackground>
     </View>
   );
 }
 function TabLoginScreen({navigation}) {
+
   return (
     
-     <View style={styles.container}>
-     <ImageBackground source={image} resizeMode="stretch" style={styles.image}>
-     </ImageBackground>
-    
-    
-    <TextInput style={styles.input1}
-      placeholder='Email'
-    />
-    <TextInput style={styles.input2}
-      placeholder='Contraseña'
-      secureTextEntry={true}
-    />
-    <Pressable style={styles.button} onPress={() => navigation.navigate('Home')}>
-    <Text style={styles.text}>Ingresar</Text>
-    </Pressable>
-    <Pressable onPress={() => navigation.navigate('Cambiar contraseña')}>
-    <Text style={styles.subtitle}>¿Has olvidado tu contraseña?</Text>
-    </Pressable>
+    <View style={styles.container}>
+    <ImageBackground source={image} resizeMode="stretch" style={styles.image}>
+    </ImageBackground>
+   
+   
+   <TextInput style={styles.input1}
+     placeholder='Email'
+   />
+   <TextInput style={styles.input2}
+     placeholder='Contraseña'
+     secureTextEntry={true}
+   />
+   <Pressable style={styles.button} onPress={() => navigation.navigate('Home')}>
+   <Text style={styles.text}>Ingresar</Text>
+   </Pressable>
+   <Pressable onPress={() => navigation.navigate('Cambiar contraseña')}>
+   <Text style={styles.subtitle}>¿Has olvidado tu contraseña?</Text>
+   </Pressable>
 
-  </View>
-  );
+ </View>
+ );
 }
 
 const MenuItems = ({navigation}) => {
@@ -457,7 +514,7 @@ const MenuItems = ({navigation}) => {
 
 
 const Drawer = createDrawerNavigator();
-export default function App() {
+export default function FaceCounterApp({}) {
   return (
     <NavigationContainer>
       <Drawer.Navigator
