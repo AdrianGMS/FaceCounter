@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, View, Text, Image, ScrollView } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer';
 import { NavigationContainer } from '@react-navigation/native';
@@ -7,12 +7,12 @@ import { ImageBackground } from 'react-native';
 import MenuButtonItem from './components/MenuButtonItem';
 import { Searchbar } from 'react-native-paper';
 import { MaterialIcons } from '@expo/vector-icons';
-
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Import the functions you need from the Firebase SDKs
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs } from 'firebase/firestore';
+import { getFirestore, collection, doc, getDoc, query, where, getDocs } from 'firebase/firestore';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 
 // TODO: Replace the following with your app's Firebase project configuration
 const firebaseConfig = {
@@ -27,10 +27,12 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
+const auth = getAuth(app)
 // Render the app component
 
 console.log("Conexión exitosa:", db);
+
+let profesorInfo = null;
 
 const image = { uri: "https://i.ibb.co/MRhBzY9/Login.png" };
 const image2 = { uri: "https://i.ibb.co/kBsHbfc/Fondo.png"}; 
@@ -341,8 +343,9 @@ function ProfileScreen({ navigation }) {
     </View>
   );
 }
-
-function Home({ navigation }) {
+/*
+function Home({ navigation, profesorData }) {
+  profesorInfo = profesorData;
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredPressables = [
@@ -419,15 +422,74 @@ return (
 </ScrollView>
 </View>
 );
+}*/
+
+function Home({ navigation, route }) {
+  const [cursos, setCursos] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const { profesorData, userId } = route.params;
+  let keyCount = 1; // Iniciamos el contador en 1
+  
+  useEffect(() => {
+    const getCursos = async () => {
+      try {
+        const cursosRef = collection(db, "curso");
+        const q = query(cursosRef, where('id_profesor', '==', userId));
+        
+        const cursosSnapshot = await getDocs(q);
+        const cursosData = cursosSnapshot.docs.map(doc => doc.data());
+        setCursos(cursosData);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    getCursos();
+  }, [profesorData]);
+
+  const onPressCurso = (curso) => {
+    navigation.navigate('Classroom', { profesorData: profesorData,
+      title: curso.d_nombre + ' ' + curso.d_codigo_seccion,
+      body: ['Día: ' + curso.d_dia, 'Horario: ' + curso.z_hora, 'Nro de Alumnos: ' + curso.n_alumnos],
+    });
+  };
+  const filteredCursos = cursos.filter(curso =>
+    (curso.d_nombre && curso.d_nombre.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (curso.d_codigo_seccion && curso.d_codigo_seccion.toLowerCase().includes(searchQuery.toLowerCase()))
+
+  );
+  return (
+    <ScrollView>
+    <View>
+      <Searchbar
+        placeholder="Buscar curso"
+        onChangeText={query => setSearchQuery(query)}
+        value={searchQuery}
+      />
+      {filteredCursos.map(curso => (
+        <Pressable
+          key={keyCount++}
+          style={styles.buttonhome}
+          onPress={() => onPressCurso(curso)}
+        >
+          <Text style={styles.texttitle}>{curso.d_nombre} {curso.d_codigo_seccion}</Text>
+          <Text style={styles.textbody}>Día: {curso.d_dia}</Text>
+          <Text style={styles.textbody}>Horario: {curso.z_hora}</Text>
+          <Text style={styles.textbtn}>Nro de Alumnos: {curso.n_alumnos}</Text>
+        </Pressable>
+      ))}
+    </View>
+    </ScrollView>
+  );
 }
+
 function Classroom({navigation, route}){
-  const { title, body } = route.params;
+  const { profesorData, title, body } = route.params;
   return(
     
     <View>
      <ImageBackground source={image2} resizeMode="stretch" style={styles.image}>
      <View style={styles.header}>
-        <Pressable onPress={() => navigation.navigate('Home')}>
+        <Pressable onPress={() => navigation.navigate('Home', { profesorData: profesorData })}>
           <MaterialIcons name="arrow-back" size={50} style={{ width: 55, height: 40 }} color="black" />
         </Pressable>
       </View>
@@ -452,40 +514,72 @@ function Classroom({navigation, route}){
   );
 }
 function TabLoginScreen({navigation}) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const profesorRef = collection(db, "profesor");
 
+  const handleLogin = () => {
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Usuario inició sesión exitosamente
+        const user = userCredential.user;
+        //console.log(user);
+
+        // Obtener el documento del profesor correspondiente
+        const profesorDoc = doc(profesorRef, user.uid);
+        getDoc(profesorDoc).then((doc) => {
+          if (doc.exists()) {
+            // El documento existe, aquí puedes obtener los datos del profesor
+            const data = doc.data();
+
+            // Redirigir al usuario a la pantalla "Home"
+            navigation.navigate('Home', { profesorData: data, userId: user.uid });
+          } else {
+            console.log("El documento no existe");
+          }
+        }).catch((error) => {
+          console.log("Error al obtener el documento:", error);
+        });
+        
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.log(errorCode, errorMessage);
+      });
+  }
   return (
-    
-    <View style={styles.container}>
+  <View style={styles.container}>
     <ImageBackground source={image} resizeMode="stretch" style={styles.image}>
     </ImageBackground>
-   
-   
-   <TextInput style={styles.input1}
-     placeholder='Email'
-   />
-   <TextInput style={styles.input2}
-     placeholder='Contraseña'
-     secureTextEntry={true}
-   />
-   <Pressable style={styles.button} onPress={() => navigation.navigate('Home')}>
-   <Text style={styles.text}>Ingresar</Text>
-   </Pressable>
-   <Pressable onPress={() => navigation.navigate('Cambiar contraseña')}>
-   <Text style={styles.subtitle}>¿Has olvidado tu contraseña?</Text>
-   </Pressable>
-
- </View>
+    <TextInput style={styles.input1}
+      placeholder='Email'
+      onChangeText={(text) => setEmail(text)}
+    />
+    <TextInput style={styles.input2}
+      placeholder='Contraseña'
+      secureTextEntry={true}
+      onChangeText={(text) => setPassword(text)}
+    />
+    <Pressable style={styles.button} onPress={handleLogin}>
+      <Text style={styles.text}>Ingresar</Text>
+    </Pressable>
+    <Pressable onPress={() => navigation.navigate('Cambiar contraseña')}>
+      <Text style={styles.subtitle}>¿Has olvidado tu contraseña?</Text>
+    </Pressable>
+  </View>
  );
 }
 
 const MenuItems = ({navigation}) => {
+
   return(
     <DrawerContentScrollView
     style = {styles.menuContainer}>
       <Image source = {{uri:"https://i.ibb.co/9V3Y4qk/avatar.jpg"}}
       style = { styles.avatar }/>
-      <Text style = {styles.menuTitle}>Usuario Profesor Prueba</Text>
-      <Text style = {styles.email}>usuarioprofesorprueba@qwerty.com</Text>
+      <Text style = {styles.menuTitle}>eeeeeeeeeeeeeeee</Text>
+      <Text style = {styles.email}>eeeeeeeeeeeee@email.com</Text>
       
       <MenuButtonItem
         image='https://i.ibb.co/R2Bqyf0/Home.png'
