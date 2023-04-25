@@ -343,86 +343,6 @@ function ProfileScreen({ navigation }) {
     </View>
   );
 }
-/*
-function Home({ navigation, profesorData }) {
-  profesorInfo = profesorData;
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const filteredPressables = [
-    <Pressable key="1" style={styles.buttonhome} onPress={() => 
-    navigation.navigate('Classroom', { title: 'Programación SW5-964', 
-    body: ['Día: Lunes', 'Horario:13-00-15:00', 'Nro de Alumnos: 18'] })}>
-      <Text style={styles.texttitle}>Programación SW5-964</Text>
-      <Text style={styles.textbody}>Día: Lunes</Text>
-      <Text style={styles.textbody}>Horario:13-00-15:00</Text>
-      <Text style={styles.textbtn}>Nro de Alumnos: 18</Text>
-    </Pressable>,
-    <Pressable key="2" style={styles.buttonhome} onPress={() =>
-      navigation.navigate('Classroom', { title: 'Programación SYH-811', 
-      body: ['Día: Lunes', 'Horario:13-00-15:00', 'Nro de Alumnos: 14'] })}>
-      <Text style={styles.texttitle}>Programación SYH-811</Text>
-      <Text style={styles.textbody}>Día: Lunes</Text>
-      <Text style={styles.textbody}>Horario:13-00-15:00</Text>
-      <Text style={styles.textbtn}>Nro de Alumnos: 14</Text>
-    </Pressable>,
-    <Pressable key="3" style={styles.buttonhome} onPress={() =>
-      navigation.navigate('Classroom', { title: 'Algoritmos y Estructuras de datos SZ0-395', 
-      body: ['Día: Martes', 'Horario:13-00-15:00', 'Nro de Alumnos: 20'] })}>
-      <Text style={styles.texttitle}>Algoritmos y Estructuras de datos SZ0-395</Text>
-      <Text style={styles.textbody}>Día: Martes</Text>
-      <Text style={styles.textbody}>Horario:13-00-15:00</Text>
-      <Text style={styles.textbtn}>Nro de Alumnos: 20</Text>
-    </Pressable>,
-    <Pressable key="4" style={styles.buttonhome} onPress={() => 
-      navigation.navigate('Classroom', { title: 'Complejidad Algoritmica SZZ-980', 
-      body: ['Día: Lunes', 'Horario:13-00-15:00', 'Nro de Alumnos: 18'] })}>
-      <Text style={styles.texttitle}>Complejidad Algoritmica SZZ-980</Text>
-      <Text style={styles.textbody}>Día: Lunes</Text>
-      <Text style={styles.textbody}>Horario:13-00-15:00</Text>
-      <Text style={styles.textbtn}>Nro de Alumnos: 18</Text>
-    </Pressable>,
-    <Pressable key="5" style={styles.buttonhome} onPress={() => 
-      navigation.navigate('Classroom', { title: 'IHC SW5-96', 
-      body: ['Día: Jueves', 'Horario:13-00-15:00', 'Nro de Alumnos: 18'] })}>
-      <Text style={styles.texttitle}>IHC SW5-964</Text>
-      <Text style={styles.textbody}>Día: Jueves</Text>
-      <Text style={styles.textbody}>Horario:13-00-15:00</Text>
-      <Text style={styles.textbtn}>Nro de Alumnos: 18</Text>
-    </Pressable>,
-    <Pressable key="6" style={styles.buttonhome} onPress={() => 
-      navigation.navigate('Classroom', { title: 'Redes SW5-964', 
-      body: ['Día: Viernes', 'Horario:21-00-23:00', 'Nro de Alumnos: 18'] })}>
-      <Text style={styles.texttitle}>Redes SW5-964</Text>
-      <Text style={styles.textbody}>Día: Viernes</Text>
-      <Text style={styles.textbody}>Horario:21-00-23:00</Text>
-      <Text style={styles.textbtn}>Nro de Alumnos: 18</Text>
-</Pressable>
-];
-
-const handleSearch = (query) => {
-setSearchQuery(query);
-};
-
-const filteredPressablesFiltered = filteredPressables.filter((pressable) =>
-pressable.props.children[0].props.children.toLowerCase().includes(searchQuery.toLowerCase())
-);
-
-return (
-<View style={styles.container}>
-<View style={styles.searchContainer}>
-<Searchbar
-       placeholder="Buscar clase"
-       onChangeText={handleSearch}
-       value={searchQuery}
-       style={styles.searchBar}
-     />
-</View>
-<ScrollView>
-{filteredPressablesFiltered}
-</ScrollView>
-</View>
-);
-}*/
 
 function Home({ navigation, route }) {
   const [cursos, setCursos] = useState([]);
@@ -465,6 +385,7 @@ function Home({ navigation, route }) {
         onChangeText={query => setSearchQuery(query)}
         value={searchQuery}
       />
+      
       {filteredCursos.map(curso => (
         <Pressable
           key={keyCount++}
@@ -513,7 +434,8 @@ function Classroom({navigation, route}){
     </View>
   );
 }
-function TabLoginScreen({navigation}) {
+
+function TabLoginScreen({navigation, setProfesorData}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const profesorRef = collection(db, "profesor");
@@ -531,7 +453,7 @@ function TabLoginScreen({navigation}) {
           if (doc.exists()) {
             // El documento existe, aquí puedes obtener los datos del profesor
             const data = doc.data();
-
+            setProfesorData(data);
             // Redirigir al usuario a la pantalla "Home"
             navigation.navigate('Home', { profesorData: data, userId: user.uid });
           } else {
@@ -571,14 +493,13 @@ function TabLoginScreen({navigation}) {
  );
 }
 
-const MenuItems = ({navigation}) => {
-
+const MenuItems = ({ navigation }) => {
   return(
     <DrawerContentScrollView
     style = {styles.menuContainer}>
       <Image source = {{uri:"https://i.ibb.co/9V3Y4qk/avatar.jpg"}}
       style = { styles.avatar }/>
-      <Text style = {styles.menuTitle}>eeeeeeeeeeeeeeee</Text>
+      <Text style = {styles.menuTitle}>aaaaaaaaaaa</Text>
       <Text style = {styles.email}>eeeeeeeeeeeee@email.com</Text>
       
       <MenuButtonItem
@@ -609,10 +530,11 @@ const MenuItems = ({navigation}) => {
 
 const Drawer = createDrawerNavigator();
 export default function FaceCounterApp({}) {
+  const [profesorData, setProfesorData] = useState(null);
   return (
     <NavigationContainer>
       <Drawer.Navigator
-       drawerContent={ (props) => <MenuItems { ...props} />} 
+       drawerContent={ (props) => <MenuItems { ...props}/>} 
        initialRouteName="Login"
        screenOptions={{
         headerTintColor: 'white',
@@ -621,8 +543,10 @@ export default function FaceCounterApp({}) {
         }
     }}
        >
-        <Drawer.Screen options={{headerShown: false}} name="Login" component={TabLoginScreen} />
-        <Drawer.Screen name="Home" component={Home} />
+        <Drawer.Screen options={{headerShown: false}} name="Login">
+          {(props) => <TabLoginScreen {...props} setProfesorData={setProfesorData} />}
+        </Drawer.Screen>
+        <Drawer.Screen name="Home" component={Home}/>
         <Drawer.Screen name="Classroom" component={Classroom} />
         <Drawer.Screen name="Mi Perfil" component={ProfileScreen} />
         <Drawer.Screen name="Ayuda" component={HelpScreen} />

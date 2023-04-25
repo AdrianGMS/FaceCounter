@@ -14,11 +14,11 @@ MODEL = "cnn"
 # Conectar a la base de datos
 conn = psycopg2.connect(
     host="localhost",
-    database="db_facecounter",
-    #database="facecounter",
+    #database="db_facecounter",
+    database="facecounter",
     user="postgres",
-    #password="tesis202301"
-    password="admin"
+    password="tesis202301"
+    #password="admin"
 
 )
 
