@@ -1,11 +1,9 @@
-Juan Perez: Ausente
-Natalia: Ausente
-Ake: Ausente
-Hamill: Presente
-Adrian: Presente
-Elvis: Presente
-Aldo: Presente
-Eduardo: Presente
-Daniel: Presente
-Mora: Presente
-Riccardo: Presente
+Eduardo: Presente | 27 de April de 2023, 13:18:26 UTC-5 | Automatico 
+Adrian: Presente | 27 de April de 2023, 13:18:26 UTC-5 | Automatico 
+Natalia: Ausente | 27 de April de 2023, 13:18:26 UTC-5 | Automatico 
+Daniel: Presente | 27 de April de 2023, 13:18:26 UTC-5 | Automatico 
+Ake: Ausente | 27 de April de 2023, 13:18:27 UTC-5 | Automatico 
+Riccardo: Presente | 27 de April de 2023, 13:18:27 UTC-5 | Automatico 
+Pauline: Presente | 27 de April de 2023, 13:18:27 UTC-5 | Automatico 
+Aldo: Presente | 27 de April de 2023, 13:18:27 UTC-5 | Automatico 
+Mora: Presente | 27 de April de 2023, 13:18:27 UTC-5 | Automatico 
