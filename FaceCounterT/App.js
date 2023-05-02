@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Button, View, Text, Image, ScrollView } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { Button, View, Text, Image, ScrollView, StyleSheet, TextInput, Pressable, Dimensions, onPress, ImageBackground } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer';
 import { NavigationContainer } from '@react-navigation/native';
-import { StyleSheet, TextInput, Pressable, onPress, Dimensions} from 'react-native';
-import { ImageBackground } from 'react-native';
+import { RNCamera } from 'react-native-camera';
 import MenuButtonItem from './components/MenuButtonItem';
 import { Searchbar } from 'react-native-paper';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -92,7 +91,7 @@ const styles = StyleSheet.create({
     margin: 15
   },
   buttonprofile:{
-    marginTop: 30,
+    marginTop: 200,
     paddingVertical: 12,
     paddingHorizontal: 32,
     borderRadius: 15,
@@ -403,8 +402,79 @@ function Home({ navigation, route }) {
   );
 }
 
+function CameraMode({ navigation }) {
+  const cameraRef = useRef(null);
+  const [cameraType, setCameraType] = useState(RNCamera.Constants.Type.back);
+  const [flashMode, setFlashMode] = useState(RNCamera.Constants.FlashMode.off);
+  const [isTakingPhoto, setIsTakingPhoto] = useState(false);
+
+  const handleCameraType = () => {
+    setCameraType(
+      cameraType === RNCamera.Constants.Type.back
+        ? RNCamera.Constants.Type.front
+        : RNCamera.Constants.Type.back
+    );
+  };
+
+  const handleFlashMode = () => {
+    setFlashMode(
+      flashMode === RNCamera.Constants.FlashMode.off
+        ? RNCamera.Constants.FlashMode.on
+        : RNCamera.Constants.FlashMode.off
+    );
+  };
+
+  const takePicture = async () => {
+    if (cameraRef.current && !isTakingPhoto) {
+      setIsTakingPhoto(true);
+      try {
+        const options = { quality: 0.5, base64: true };
+        const data = await cameraRef.current.takePictureAsync(options);
+        console.log(data.uri);
+        // Aquí puedes guardar la imagen en Firebase Storage o en cualquier otro lugar
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setIsTakingPhoto(false);
+      }
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <RNCamera
+        ref={cameraRef}
+        style={styles.camera}
+        type={cameraType}
+        flashMode={flashMode}
+        captureAudio={false}
+        androidCameraPermissionOptions={{
+          title: 'Permission to use camera',
+          message: 'We need your permission to use your camera',
+          buttonPositive: 'Ok',
+          buttonNegative: 'Cancel',
+        }}
+      />
+      <View style={styles.topButtons}>
+        <Pressable onPress={handleFlashMode}>
+          <Text style={styles.buttonText}>{flashMode === RNCamera.Constants.FlashMode.off ? 'Flash On' : 'Flash Off'}</Text>
+        </Pressable>
+        <Pressable onPress={handleCameraType}>
+          <Text style={styles.buttonText}>{cameraType === RNCamera.Constants.Type.back ? 'Front Camera' : 'Back Camera'}</Text>
+        </Pressable>
+      </View>
+      <View style={styles.bottomButtons}>
+        <Pressable onPress={takePicture}>
+          <View style={styles.captureButton} />
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
 function Classroom({navigation, route}){
   const { profesorData, title, body } = route.params;
+  
   return(
     
     <View>
@@ -421,13 +491,8 @@ function Classroom({navigation, route}){
           </Text>
         ))}
      <View style={styles.containerprofile}>
-      <Pressable style={styles.buttonprofile} onPress={() => navigation.navigate('Home')}>
+      <Pressable style={styles.buttonprofile} onPress={() => navigation.navigate('CameraMode')}>
         <Text style={styles.textbtn}>Tomar Foto</Text>
-      </Pressable>
-      </View>
-      <View style={styles.containerprofile}>
-      <Pressable style={styles.buttonprofile} onPress={() => navigation.navigate('Home')}>
-        <Text style={styles.textbtn}>Seleccionar Foto</Text>
       </Pressable>
       </View>
      </ImageBackground>
@@ -550,6 +615,7 @@ export default function FaceCounterApp({}) {
         <Drawer.Screen name="Classroom" component={Classroom} />
         <Drawer.Screen name="Mi Perfil" component={ProfileScreen} />
         <Drawer.Screen name="Ayuda" component={HelpScreen} />
+        <Drawer.Screen name="CameraMode" component={CameraMode} />
         <Drawer.Screen name="Cambiar contraseña" component={PasswordScreen} />
         <Drawer.Screen options={{headerShown: false}} name="Cerrar Sesión" component={TabLoginScreen} />
       </Drawer.Navigator>
