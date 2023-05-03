@@ -2,11 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button, View, Text, Image, ScrollView, StyleSheet, TextInput, Pressable, Dimensions, onPress, ImageBackground } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer';
 import { NavigationContainer } from '@react-navigation/native';
-import { RNCamera } from 'react-native-camera';
+import CameraRoll from '@react-native-community/cameraroll';
 import MenuButtonItem from './components/MenuButtonItem';
 import { Searchbar } from 'react-native-paper';
 import { MaterialIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as ImagePicker from 'expo-image-picker';
+import * as Permissions from 'expo-permissions';
+import { Camera } from 'expo-camera';
+import { captureRef } from 'react-native-view-shot';
 
 // Import the functions you need from the Firebase SDKs
 import { initializeApp } from "firebase/app";
@@ -402,100 +406,41 @@ function Home({ navigation, route }) {
   );
 }
 
-function CameraMode({ navigation }) {
-  const cameraRef = useRef(null);
-  const [cameraType, setCameraType] = useState(RNCamera.Constants.Type.back);
-  const [flashMode, setFlashMode] = useState(RNCamera.Constants.FlashMode.off);
-  const [isTakingPhoto, setIsTakingPhoto] = useState(false);
 
-  const handleCameraType = () => {
-    setCameraType(
-      cameraType === RNCamera.Constants.Type.back
-        ? RNCamera.Constants.Type.front
-        : RNCamera.Constants.Type.back
-    );
-  };
-
-  const handleFlashMode = () => {
-    setFlashMode(
-      flashMode === RNCamera.Constants.FlashMode.off
-        ? RNCamera.Constants.FlashMode.on
-        : RNCamera.Constants.FlashMode.off
-    );
-  };
+function Classroom({ navigation, route }) {
+  const { profesorData, title, body } = route.params;
 
   const takePicture = async () => {
-    if (cameraRef.current && !isTakingPhoto) {
-      setIsTakingPhoto(true);
-      try {
-        const options = { quality: 0.5, base64: true };
-        const data = await cameraRef.current.takePictureAsync(options);
-        console.log(data.uri);
-        // Aquí puedes guardar la imagen en Firebase Storage o en cualquier otro lugar
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setIsTakingPhoto(false);
-      }
+    const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+    if (status === 'granted') {
+      const { uri } = await ImagePicker.launchCameraAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images });
+      console.log(uri);
+      // Aquí puedes hacer algo con la imagen capturada, como guardarla en el dispositivo o enviarla a una API
+    } else {
+      console.log('No se concedió permiso para acceder a la cámara.');
     }
   };
 
   return (
-    <View style={styles.container}>
-      <RNCamera
-        ref={cameraRef}
-        style={styles.camera}
-        type={cameraType}
-        flashMode={flashMode}
-        captureAudio={false}
-        androidCameraPermissionOptions={{
-          title: 'Permission to use camera',
-          message: 'We need your permission to use your camera',
-          buttonPositive: 'Ok',
-          buttonNegative: 'Cancel',
-        }}
-      />
-      <View style={styles.topButtons}>
-        <Pressable onPress={handleFlashMode}>
-          <Text style={styles.buttonText}>{flashMode === RNCamera.Constants.FlashMode.off ? 'Flash On' : 'Flash Off'}</Text>
-        </Pressable>
-        <Pressable onPress={handleCameraType}>
-          <Text style={styles.buttonText}>{cameraType === RNCamera.Constants.Type.back ? 'Front Camera' : 'Back Camera'}</Text>
-        </Pressable>
-      </View>
-      <View style={styles.bottomButtons}>
-        <Pressable onPress={takePicture}>
-          <View style={styles.captureButton} />
-        </Pressable>
-      </View>
-    </View>
-  );
-}
-
-function Classroom({navigation, route}){
-  const { profesorData, title, body } = route.params;
-  
-  return(
-    
     <View>
-     <ImageBackground source={image2} resizeMode="stretch" style={styles.image}>
-     <View style={styles.header}>
-        <Pressable onPress={() => navigation.navigate('Home', { profesorData: profesorData })}>
-          <MaterialIcons name="arrow-back" size={50} style={{ width: 55, height: 40 }} color="black" />
-        </Pressable>
-      </View>
-      <Text style={styles.texttitlec}>{title}</Text>
+      <ImageBackground source={image2} resizeMode="stretch" style={styles.image}>
+        <View style={styles.header}>
+          <Pressable onPress={() => navigation.navigate('Home', { profesorData: profesorData })}>
+            <MaterialIcons name="arrow-back" size={50} style={{ width: 55, height: 40 }} color="black" />
+          </Pressable>
+        </View>
+        <Text style={styles.texttitlec}>{title}</Text>
         {body.map((text, index) => (
           <Text key={index} style={styles.textbodyc}>
             {text}
           </Text>
         ))}
-     <View style={styles.containerprofile}>
-      <Pressable style={styles.buttonprofile} onPress={() => navigation.navigate('CameraMode')}>
-        <Text style={styles.textbtn}>Tomar Foto</Text>
-      </Pressable>
-      </View>
-     </ImageBackground>
+        <View style={styles.containerprofile}>
+          <Pressable style={styles.buttonprofile} onPress={takePicture}>
+            <Text style={styles.textbtn}>Tomar Foto</Text>
+          </Pressable>
+        </View>
+      </ImageBackground>
     </View>
   );
 }
@@ -615,7 +560,6 @@ export default function FaceCounterApp({}) {
         <Drawer.Screen name="Classroom" component={Classroom} />
         <Drawer.Screen name="Mi Perfil" component={ProfileScreen} />
         <Drawer.Screen name="Ayuda" component={HelpScreen} />
-        <Drawer.Screen name="CameraMode" component={CameraMode} />
         <Drawer.Screen name="Cambiar contraseña" component={PasswordScreen} />
         <Drawer.Screen options={{headerShown: false}} name="Cerrar Sesión" component={TabLoginScreen} />
       </Drawer.Navigator>
