@@ -1,0 +1,13 @@
+Buenos dias profesor, le explicare cuales son los documentos importantes:
+PRY20220207 - FaceCounter Conference Paper: aqui es el paper hecho en OverLeaf
+Links.txt : links al github y al video demostración de youtube
+FaceCounterAPI.py: el programa de reconocimiento facial en python
+FaceCounterT: aqui dentro esta la app android
+faces.dat: el modelo entrenado con mi data para ahorrar tiempo al ejecutrar FaceCounterAPI.py
+ImageTaker: codigo que vuelve los videos en Frames
+Cartera de Proyectos.docx: aqui estan los 3 proyectos propuestos
+FaceRecognitionTraining.py: el entrenamiento de mis fotos
+import firebase_admin.py: queries en python para crear la base de datos en firebase
+paquetes.txt: tiene las librerias del entorno virtual en anaconda para ejecutar los proyectos
+en python incluyendo el FaceCounterAPI.py, ademas se necesita intalar firebase con
+"pip install firebase-admin" a la vez que se instala todo el paquete para el entorno virtual
