@@ -8,7 +8,6 @@ import { Searchbar } from 'react-native-paper';
 import { MaterialIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
-import * as Permissions from 'expo-permissions';
 import { Camera } from 'expo-camera';
 import { captureRef } from 'react-native-view-shot';
 
@@ -16,6 +15,7 @@ import { captureRef } from 'react-native-view-shot';
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, doc, getDoc, query, where, getDocs } from 'firebase/firestore';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { getStorage, ref, uploadBytes } from 'firebase/storage';
 
 // TODO: Replace the following with your app's Firebase project configuration
 const firebaseConfig = {
@@ -31,6 +31,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app)
+const storage = getStorage(app);
 // Render the app component
 
 console.log("Conexión exitosa:", db);
@@ -409,16 +410,40 @@ function Home({ navigation, route }) {
 
 function Classroom({ navigation, route }) {
   const { profesorData, title, body } = route.params;
+  const [cameraPermission, setCameraPermission] = useState(null);
+  const [imageUri, setImageUri] = useState(null);
+
+  useEffect(() => {
+    getCameraPermission();
+  }, []);
+
+  const getCameraPermission = async () => {
+    const { status } = await Camera.requestCameraPermissionsAsync();
+    setCameraPermission(status === 'granted');
+  };
 
   const takePicture = async () => {
-    const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
-    if (status === 'granted') {
-      const { uri } = await ImagePicker.launchCameraAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images });
-      console.log(uri);
-      // Aquí puedes hacer algo con la imagen capturada, como guardarla en el dispositivo o enviarla a una API
-    } else {
+    if (!cameraPermission) {
       console.log('No se concedió permiso para acceder a la cámara.');
+      return;
     }
+    const { assets } = await ImagePicker.launchCameraAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images });
+    const uri = assets[0].uri;
+    console.log(uri);
+    setImageUri(uri);
+    console.log("enviando imagen a firebase");
+    const imageRef = ref(storage, 'Fotos Subidas/' + Date.now() + '.jpg');
+    console.log("imageRef: ", imageRef);
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    try {
+      const snapshot = await uploadBytes(imageRef, blob);
+      console.log("snapshot: ", snapshot);
+      console.log('Imagen subida con éxito a Firebase Storage:', snapshot.ref.fullPath);
+    } catch (error) {
+      console.error(error);
+    }
+    
   };
 
   return (
@@ -440,10 +465,14 @@ function Classroom({ navigation, route }) {
             <Text style={styles.textbtn}>Tomar Foto</Text>
           </Pressable>
         </View>
+        {imageUri && (
+          <Image source={{ uri: imageUri }} style={{ width: 200, height: 200 }} />
+        )}
       </ImageBackground>
     </View>
   );
 }
+
 
 function TabLoginScreen({navigation, setProfesorData}) {
   const [email, setEmail] = useState('');
