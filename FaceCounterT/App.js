@@ -431,18 +431,12 @@ function Classroom({ navigation, route }) {
     const uri = assets[0].uri;
     console.log(uri);
     setImageUri(uri);
-    console.log("enviando imagen a firebase");
     const imageRef = ref(storage, 'Fotos Subidas/' + Date.now() + '.jpg');
-    console.log("imageRef: ", imageRef);
     const response = await fetch(uri);
     const blob = await response.blob();
-    try {
-      const snapshot = await uploadBytes(imageRef, blob);
-      console.log("snapshot: ", snapshot);
-      console.log('Imagen subida con éxito a Firebase Storage:', snapshot.ref.fullPath);
-    } catch (error) {
-      console.error(error);
-    }
+    const snapshot = await uploadBytes(imageRef, blob);
+    console.log('Imagen subida con éxito a Firebase Storage:', snapshot.ref.fullPath);
+    
     
   };
 
@@ -508,6 +502,7 @@ function TabLoginScreen({navigation, setProfesorData}) {
         const errorMessage = error.message;
         console.log(errorCode, errorMessage);
       });
+    
   }
   return (
   <View style={styles.container}>

@@ -11,8 +11,8 @@ from datetime import datetime
 import uuid
 # Conectar a la base de datos
 # Use a service account
-#cred = credentials.Certificate('C:/Users/USUARIO/AA - Proyecto FACE COUNTER/facecounter-7bdad-firebase-adminsdk-zdctb-27c9931a03.json')
-cred = credentials.Certificate('E:/AA - FaceCounter/FaceCounter/facecounter-7bdad-firebase-adminsdk-zdctb-27c9931a03.json')
+cred = credentials.Certificate('C:/Users/USUARIO/AA - Proyecto FACE COUNTER/facecounter-7bdad-firebase-adminsdk-zdctb-27c9931a03.json')
+#cred = credentials.Certificate('E:/AA - FaceCounter/FaceCounter/facecounter-7bdad-firebase-adminsdk-zdctb-27c9931a03.json')
 firebase_admin.initialize_app(cred, {'storageBucket': 'facecounter-7bdad.appspot.com'})
 
 app = firebase_admin.get_app()
@@ -32,12 +32,12 @@ folder_name2 = 'Registro de fotografías/'
 blobs = bucket.list_blobs(prefix=folder_name)
 
 # Crear una carpeta temporal para almacenar los archivos descargados
-temp_folder = 'E:/AA - FaceCounter/FaceCounter/temp_folder'
+temp_folder = 'C:/Users/USUARIO/AA - Proyecto FACE COUNTER/temp_folder'
 if not os.path.exists(temp_folder):
     os.makedirs(temp_folder)
 print('Carpeta temporal y archivos descargados exitosamente')
 
-temp_folder2 = 'E:/AA - FaceCounter/FaceCounter/temp_upload'
+temp_folder2 = 'C:/Users/USUARIO/AA - Proyecto FACE COUNTER/temp_upload'
 if not os.path.exists(temp_folder2):
     os.makedirs(temp_folder2)
 print('Carpeta temporal y archivos descargados exitosamente')
