@@ -17,7 +17,7 @@ from firebase_admin import firestore
 from firebase_admin import storage
 from datetime import datetime
 import uuid
-from flask import Flask
+from flask import Flask, render_template
 import io
 import pickle
 import numpy as np
@@ -185,25 +185,23 @@ def face_counter_api():
     filename_txt = 'archivos de asistencia/asistencia.txt'
     filename_csv = 'archivos de asistencia/asistencia.csv'
 
-    # Guardar resultados en TXT
-    with open("asistencia.txt", "w") as f:
-        for row in results:
-            f.write(f"{row[0]}: {row[1]} | {row[2] } | {row[3]} \n")
-
-    # Guardar resultados en CSV
-    with open('asistencia.csv', 'w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(['Nombre', 'Asistencia', 'Fecha', 'Modificacion'])
-        for row in results:
-            writer.writerow(row)
+    # Crear el contenido del archivo TXT
+    content_txt = ''
+    for row in results:
+        content_txt += f"{row[0]}: {row[1]} | {row[2] } | {row[3]}\n"
 
     # Subir el archivo TXT a Firebase Storage
     blob_txt = bucket.blob(filename_txt)
-    blob_txt.upload_from_filename("asistencia.txt")
+    blob_txt.upload_from_string(content_txt)
+
+    # Crear el contenido del archivo CSV
+    content_csv = 'Nombre,Asistencia,Fecha,Modificacion\n'
+    for row in results:
+        content_csv += f"{row[0]},{row[1]},{row[2]},{row[3]}\n"
 
     # Subir el archivo CSV a Firebase Storage
     blob_csv = bucket.blob(filename_csv)
-    blob_csv.upload_from_filename("asistencia.csv")
+    blob_csv.upload_from_string(content_csv)
 
     print(f"Archivos de asistencia subidos exitosamente a Firebase Storage")
     return "Reconocimiento realizado"
