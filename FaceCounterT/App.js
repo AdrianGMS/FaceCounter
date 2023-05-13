@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button, View, Text, Image, ScrollView, StyleSheet, TextInput, Pressable, Dimensions, onPress, ImageBackground } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer';
 import { NavigationContainer } from '@react-navigation/native';
-import CameraRoll from '@react-native-community/cameraroll';
 import MenuButtonItem from './components/MenuButtonItem';
 import { Searchbar } from 'react-native-paper';
 import { MaterialIcons } from '@expo/vector-icons';
