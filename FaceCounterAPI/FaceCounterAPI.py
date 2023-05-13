@@ -1,3 +1,4 @@
+from firebase_admin import initialize_app
 import face_recognition
 import pickle
 import cv2
@@ -9,10 +10,28 @@ from firebase_admin import firestore
 from firebase_admin import storage
 from datetime import datetime
 import uuid
-# Conectar a la base de datos
-# Use a service account
-cred = credentials.Certificate('C:/Users/USUARIO/AA - Proyecto FACE COUNTER/facecounter-7bdad-firebase-adminsdk-zdctb-27c9931a03.json')
-#cred = credentials.Certificate('E:/AA - FaceCounter/FaceCounter/facecounter-7bdad-firebase-adminsdk-zdctb-27c9931a03.json')
+from flask import Flask
+import io
+import pickle
+import numpy as np
+from PIL import Image, ImageOps
+
+key = {
+"type": "service_account",
+"project_id": "facecounter-7bdad",
+"private_key_id": "7c233c617d6066e5e2016f7f5fac1fa8e81c50c5",
+"private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCxJV3TcgtpIyz8\nrw+1u7+VObid8RRf90Ti0SbE9wI1/9okm365XHqka5anZDOKa0JilTBbnCcM+Say\nZk3BgTDGE2QR9rOR3+iFi/MI5j0PoRLgzUTZDMl2W7C6cGi8eoIzWHsnjFrdExSb\nSiQp0rV02z2rs4ro/IP6YQIYmp4hlrxxwlkTxRiSyZqLs3l8hHNwtcdFo75m2KGl\n7FFjm0YfmoBojQMKO5VP9eLovEqXDK0uRagd4PKjU53xNuHmIURHCsbtzNZHfMSC\n+CZ5nQuSFOoBfBX9+mlbcho6ikMprLDMODz5Ne88evRQDOSZEhQy9Re3bjnS7UjK\nnuh/Dz+RAgMBAAECggEABU1KgR0dNVDdtFRjAnvzkHpRSbzg8LxcXfOHlwaTlN0r\nAMR8pvybGRe1Qx5PIpnyOzQe5ecHDi7Y1ycTtbJxrMQAzz7Ugg2zDmgxZndJpZGb\nGIpcQKjO0NGOuQ3LPLTn97RyvyzGvW4oRDuUWIIbdztmnaB6jF2eb5x+rRDXocat\n03vd+omgQLnrFMxRkR2zPqSd0VTnbrnzNF9sP3fVXcilD4i9BpgI+4WiAw22JPLT\nJaME4M+WN9Lg132Up9m+KEptBxXwdpIqmvd5BhOCMm08JQoWvApoXVqdJGYShOu6\nd3Uh/byukoHsR3BCVY1FJ9gv42zuO5ZgJHo4GUQw7wKBgQDyYFiHUA0Fn6+zy/IX\n+YI7UgOoDQdtF5Cf1nH5h2jOPheA2HTdu/0uqlDNhi/e1dzGh0+ZroVEJa2pWDUH\nFfRCUt23oJnWOYHFc9zGMDtqTxCQLqsDjZcPg756bKkqAtDyFqSgoBRrftGHqCWM\n9V0sMCVP7QwCUuAV7POoBT5OiwKBgQC7GmS7+z0HOQiRfwjJ7h/dG6WZD6qCTNEe\ni9saNRDAoFHAC5XSQaQwzaHARD2QzJxo1+GxyxzmwNl8emmHGTXyWmvs2EOzDQzJ\nyudu9oB13/eNJPGZXzUICt2E6sKA+as1hDreeDxLZmo4E9UZq7g1EEZiwmF6c2Cy\nVJVyRKjp0wKBgBH0jzpe9MgA32xLZIDgLASm+7xcUruDLmSY51Kb9Giq8uTJpEa0\n4XmuhlPjZ/JzF2rhpUT2R8sXm3jbHvqKZtDvAJvU2vCiy/lLrwRDmHM0rj5wJp0Z\nxSISGW9KU3HYSZBVmxaHJVwdRfptu3JozuEyI+F65xPY/d7B8f71fHsnAoGAPswA\n+0a7mOz/fzXP0VZmw2NAFTs40zrNBR+Tjhw5Xy1vwrEgu8zkOq0JmOpOb4b9CANM\n8MtnC9u2Ix1CxeEkRg8rIfcD4diDbkb3njqFqwpcn7bCj+NwfR6IctAIMBmb6P5U\nc86PDg91nxSo9VC5JrYrqYHsDZkj3zacYhnBR5kCgYEAkoUsrYuetMoT/lC7yAa8\nNAxJme3XyhqKwyYwwz2d9t5af71vADOqSutQY1yk7dQczJXppo1szNB1RGk0neSv\n/JGaH+rH8PcO1RivZbOLKB3oU7EFmmI0ZCsaDoKCJ4hRkXaqB31rmLYbvNODwYw4\n+ob7HqkjGql/bUIbEtSb768=\n-----END PRIVATE KEY-----\n",
+"client_email": "firebase-adminsdk-zdctb@facecounter-7bdad.iam.gserviceaccount.com",
+"client_id": "103057494865791731303",
+"auth_uri": "https://accounts.google.com/o/oauth2/auth",
+"token_uri": "https://oauth2.googleapis.com/token",
+"auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+"client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-zdctb%40facecounter-7bdad.iam.gserviceaccount.com",
+"universe_domain": "googleapis.com"
+}
+
+# Inicializar la app de Firebase
+cred = credentials.Certificate(key)
 firebase_admin.initialize_app(cred, {'storageBucket': 'facecounter-7bdad.appspot.com'})
 
 app = firebase_admin.get_app()
@@ -26,31 +45,10 @@ bucket = storage.bucket()
 
 # Define el nombre de la carpeta en el Storage de Firebase que deseas descargar
 folder_name = 'Fotos Subidas/'
-folder_name2 = 'Registro de fotografías/'
 
 # Obtener la lista de nombres de los archivos en la carpeta
 blobs = bucket.list_blobs(prefix=folder_name)
 
-# Crear una carpeta temporal para almacenar los archivos descargados
-temp_folder = 'C:/Users/USUARIO/AA - Proyecto FACE COUNTER/temp_folder'
-if not os.path.exists(temp_folder):
-    os.makedirs(temp_folder)
-print('Carpeta temporal y archivos descargados exitosamente')
-
-temp_folder2 = 'C:/Users/USUARIO/AA - Proyecto FACE COUNTER/temp_upload'
-if not os.path.exists(temp_folder2):
-    os.makedirs(temp_folder2)
-print('Carpeta temporal y archivos descargados exitosamente')
-
-# Descargar los archivos de la carpeta y guardarlos en la carpeta temporal
-for blob in blobs:
-    file_name = blob.name.replace(folder_name, 'temp_0')
-    blob.download_to_filename(os.path.join(temp_folder, file_name))
-    print(f'{file_name} descargado exitosamente')
-# Eliminar el archivo temp_folder
-os.remove(os.path.join(temp_folder, 'temp_0'))
-
-UNKNOWN_FACES_DIR = "C:/Users/USUARIO/AA - Proyecto FACE COUNTER/temp_folder"
 TOLERANCE = 0.5
 FRAME_THICKNESS = 3
 FONT_THICKNESS = 2
@@ -69,25 +67,42 @@ def marcar_ausente_todos():
 
 
 print("Cargando caras conocidas desde el archivo 'faces.dat'")
-with open('faces.dat', 'rb') as f:
-    data = pickle.load(f)
-    known_faces = data['known_faces']
-    known_names = data['known_names']
+# Descarga el archivo faces.dat como bytes desde Firebase Storage
+blob_dat = bucket.blob('faces.dat')
+faces_data = blob_dat.download_as_string()
 
+# Carga el contenido del archivo en memoria usando io.BytesIO
+in_memory_file = io.BytesIO(faces_data)
+
+# Usa pickle para cargar los datos del archivo en un diccionario
+data = pickle.load(in_memory_file)
+known_faces = data['known_faces']
+known_names = data['known_names']
 
 print("Procesando caras desconocidas")
 correct_recognitions = 0
 total_recognitions = 0
 
 marcar_ausente_todos()
-for filename in os.listdir(UNKNOWN_FACES_DIR):
-    print(filename)
-    image=face_recognition.load_image_file(f"{UNKNOWN_FACES_DIR}/{filename}")
-    image = cv2.resize(image, (0, 0), fx=0.15, fy=0.15)
-    locations = face_recognition.face_locations(image, model=MODEL)
-    encoding = face_recognition.face_encodings(image, locations)
-    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+# Recorrer los blobs en la carpeta y cargar las imágenes en memoria
+for blob in blobs:
+    # Obtener los datos binarios del blob
+    img_data = blob.download_as_bytes()
+    if img_data:
+        # Convertir los datos binarios en un objeto Image de PIL
+        image = Image.open(io.BytesIO(img_data))
 
+        # Redimensionar la imagen proporcionalmente usando ImageOps.fit()
+        image = ImageOps.fit(image, (int(image.size[0]*0.15), int(image.size[1]*0.15)))
+        image = np.asarray(image)
+        # Detectar las caras en la imagen
+        locations = face_recognition.face_locations(image, model=MODEL)
+        encoding = face_recognition.face_encodings(image, locations)
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    
+    else:
+        continue
+    # Dibujar los cuadros y los nombres en la imagen
     for face_encoding, face_location in zip(encoding, locations):
         results = face_recognition.compare_faces(known_faces, face_encoding, TOLERANCE)
         match = None
@@ -129,34 +144,21 @@ for filename in os.listdir(UNKNOWN_FACES_DIR):
 
         
         total_recognitions += 1
-    # Guarda la imagen procesada en una carpeta temporal
-    temp_filename = f"{uuid.uuid4()}.jpg"
-    temp_filepath = os.path.join(temp_folder2, temp_filename)
-    cv2.imwrite(temp_filepath, image)
 
     # Sube la imagen a Firebase Storage
-    blob = bucket.blob('Registro de fotografias/' + temp_filename)
-    blob.upload_from_filename(temp_filepath)
+    blob = bucket.blob('Registro de fotografias/' + str(uuid.uuid4()) + '.jpg')
+    _, buffer = cv2.imencode('.jpg', image)
+    blob.upload_from_string(buffer.tobytes(), content_type='image/jpeg')
 
-    print(f"{temp_filename} subido exitosamente a Firebase Storage")
-    cv2.imshow(filename, image)
+    print(f"Imagen subida exitosamente a Firebase Storage")
+
+    cv2.imshow(blob.name, image)
     cv2.waitKey(5000)
     #cv2.destroyWindow(filename)
 
 
 accuracy = correct_recognitions / total_recognitions * 100
 print(f"Accuracy: {accuracy:.2f}%")
-
-# Eliminar la carpeta temporal y los archivos descargados
-for file_name in os.listdir(temp_folder):
-    os.remove(os.path.join(temp_folder, file_name))
-os.rmdir(temp_folder)
-print('Carpeta temporal y archivos descargados eliminados exitosamente')
-
-for file_name in os.listdir(temp_folder2):
-    os.remove(os.path.join(temp_folder2, file_name))
-os.rmdir(temp_folder2)
-print('Carpeta temporal y archivos descargados eliminados exitosamente')
 
 # Obtener los registros de asistencia para el curso
 results = []
@@ -168,6 +170,9 @@ for alumno in alumnos_ref:
     modificacion = alumno.get('d_modificacion')
     results.append((nombre, asistencia, fecha, modificacion))
     
+# Definir los nombres de los archivos y su ruta en Firebase Storage
+filename_txt = 'archivos de asistencia/asistencia.txt'
+filename_csv = 'archivos de asistencia/asistencia.csv'
 
 # Guardar resultados en TXT
 with open("asistencia.txt", "w") as f:
@@ -180,3 +185,14 @@ with open('asistencia.csv', 'w', newline='') as file:
     writer.writerow(['Nombre', 'Asistencia', 'Fecha', 'Modificacion'])
     for row in results:
         writer.writerow(row)
+
+# Subir el archivo TXT a Firebase Storage
+blob_txt = bucket.blob(filename_txt)
+blob_txt.upload_from_filename("asistencia.txt")
+
+# Subir el archivo CSV a Firebase Storage
+blob_csv = bucket.blob(filename_csv)
+blob_csv.upload_from_filename("asistencia.csv")
+
+print(f"Archivos de asistencia subidos exitosamente a Firebase Storage")
+

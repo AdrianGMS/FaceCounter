@@ -29,7 +29,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const auth = getAuth(app)
+const auth = getAuth(app);
 const storage = getStorage(app);
 // Render the app component
 
@@ -435,7 +435,6 @@ function Classroom({ navigation, route }) {
     const blob = await response.blob();
     const snapshot = await uploadBytes(imageRef, blob);
     console.log('Imagen subida con éxito a Firebase Storage:', snapshot.ref.fullPath);
-    
     
   };
 
