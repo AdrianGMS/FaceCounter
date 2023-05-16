@@ -1,16 +1,7 @@
-# Welcome to Cloud Functions for Firebase for Python!
-# To get started, simply uncomment the below code or create your own.
-# Deploy with `firebase deploy`
-#firebase emulators:start --only functions
-#firebase deploy --only functions
-
 #from firebase_functions import firebase_function, https_fn
-from firebase_admin import initialize_app
 import face_recognition
 import pickle
 import cv2
-import os
-import csv
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
@@ -19,15 +10,13 @@ from datetime import datetime
 import uuid
 from flask import Flask, render_template
 import io
+import os
 import pickle
 import numpy as np
 from PIL import Image, ImageOps
 
-app1 = Flask(__name__)
-
-@app1.route("/")
-def face_counter_api():
-    key = {
+app = Flask(__name__)
+key = {
     "type": "service_account",
     "project_id": "facecounter-7bdad",
     "private_key_id": "7c233c617d6066e5e2016f7f5fac1fa8e81c50c5",
@@ -42,11 +31,13 @@ def face_counter_api():
     }
 
     # Inicializar la app de Firebase
-    cred = credentials.Certificate(key)
-    firebase_admin.initialize_app(cred, {'storageBucket': 'facecounter-7bdad.appspot.com'})
+cred = credentials.Certificate(key)
+firebase_admin.initialize_app(cred, {'storageBucket': 'facecounter-7bdad.appspot.com'})
 
-    app = firebase_admin.get_app()
-    print(app.name)
+@app.route("/")
+def face_counter_api():
+    app1 = firebase_admin.get_app()
+    print(app1.name)
 
     # Get a reference to the Firestore database
     db = firestore.client()
@@ -207,4 +198,5 @@ def face_counter_api():
     return "Reconocimiento realizado"
 
 if __name__ == "__main__":
-    app1.run()
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=True, host='0.0.0.0', port=port)

@@ -9,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { Camera } from 'expo-camera';
 import { captureRef } from 'react-native-view-shot';
+import { useNavigation } from '@react-navigation/native';
 
 // Import the functions you need from the Firebase SDKs
 import { initializeApp } from "firebase/app";
@@ -421,6 +422,21 @@ function Classroom({ navigation, route }) {
     setCameraPermission(status === 'granted');
   };
 
+  const refreshPage = () => {
+    //cambiar url por direccion ip
+    fetch('http://192.168.1.49:5000')
+      .then(response => {
+        if (response.ok) {
+          console.log('La página se refrescó exitosamente.');
+        } else {
+          console.log('Ocurrió un error al intentar refrescar la página.');
+        }
+      })
+      .catch(error => {
+        console.log('Error de red:', error);
+      });
+  };
+
   const takePicture = async () => {
     if (!cameraPermission) {
       console.log('No se concedió permiso para acceder a la cámara.');
@@ -435,7 +451,11 @@ function Classroom({ navigation, route }) {
     const blob = await response.blob();
     const snapshot = await uploadBytes(imageRef, blob);
     console.log('Imagen subida con éxito a Firebase Storage:', snapshot.ref.fullPath);
-    
+    // Redirigir a la URL http://127.0.0.1:5000
+    console.log('Analizando caras')
+    refreshPage();
+    console.log('termino analisis')
+
   };
 
   return (
