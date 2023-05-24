@@ -374,7 +374,7 @@ function Home({ navigation, route }) {
     navigation.navigate('Classroom', { profesorData: profesorData,
       cursoName: curso.d_nombre,
       title: curso.d_nombre + ' ' + curso.d_codigo_seccion,
-      body: ['Día: ' + curso.d_dia,'Horario: ' + curso.z_hora, 'Nro de Alumnos: ' + curso.n_alumnos],
+      body: ['Día: ' + curso.d_dia,'Horario: ' + curso.z_hora],
     });
   };
   const filteredCursos = cursos.filter(curso =>
@@ -400,7 +400,6 @@ function Home({ navigation, route }) {
           <Text style={styles.texttitle}>{curso.d_nombre} {curso.d_codigo_seccion}</Text>
           <Text style={styles.textbody}>Día: {curso.d_dia}</Text>
           <Text style={styles.textbody}>Horario: {curso.z_hora}</Text>
-          <Text style={styles.textbtn}>Nro de Alumnos: {curso.n_alumnos}</Text>
         </Pressable>
       ))}
     </View>

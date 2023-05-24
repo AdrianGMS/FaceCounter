@@ -1,4 +1,3 @@
-#from firebase_functions import firebase_function, https_fn
 import face_recognition
 import pickle
 import cv2
