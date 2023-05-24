@@ -8,7 +8,7 @@ from firebase_admin import firestore
 from firebase_admin import storage
 from datetime import datetime
 import uuid
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import io
 import os
 import pickle
@@ -57,8 +57,8 @@ def face_counter_api():
     MODEL = "cnn"
 
     # Establecer el código del curso
-    c_codigo_curso = "6OnWmcvdlM27usk2U68Q"
-
+    c_codigo_curso = request.args.get('cursoID')
+    print("codigo: ", c_codigo_curso)
     def marcar_ausente_todos():
         alumnos_ref = db.collection('curso_alumno').where("c_codigo_curso", "==", c_codigo_curso)
         alumnos = alumnos_ref.get()
@@ -153,11 +153,6 @@ def face_counter_api():
         blob.upload_from_string(buffer.tobytes(), content_type='image/jpeg')
 
         print(f"Imagen subida exitosamente a Firebase Storage")
-
-        cv2.imshow(blob.name, image)
-        cv2.waitKey(5000)
-        #cv2.destroyWindow(filename)
-
 
     accuracy = correct_recognitions / total_recognitions * 100
     print(f"Accuracy: {accuracy:.2f}%")

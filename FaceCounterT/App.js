@@ -372,8 +372,9 @@ function Home({ navigation, route }) {
 
   const onPressCurso = (curso) => {
     navigation.navigate('Classroom', { profesorData: profesorData,
+      cursoName: curso.d_nombre,
       title: curso.d_nombre + ' ' + curso.d_codigo_seccion,
-      body: ['Día: ' + curso.d_dia, 'Horario: ' + curso.z_hora, 'Nro de Alumnos: ' + curso.n_alumnos],
+      body: ['Día: ' + curso.d_dia,'Horario: ' + curso.z_hora, 'Nro de Alumnos: ' + curso.n_alumnos],
     });
   };
   const filteredCursos = cursos.filter(curso =>
@@ -409,10 +410,28 @@ function Home({ navigation, route }) {
 
 
 function Classroom({ navigation, route }) {
-  const { profesorData, title, body } = route.params;
+  const { profesorData, cursoName, title, body } = route.params;
   const [cameraPermission, setCameraPermission] = useState(null);
   const [imageUri, setImageUri] = useState(null);
+  const curso_Name = cursoName;
+  console.log("cursoName: ", curso_Name)
+  let cursoID = '';
 
+  const getDocumentId = async () => {
+    const collectionRef = collection(db, 'curso');
+    const querySnapshot = await getDocs(collectionRef);
+  
+    querySnapshot.forEach((doc) => {
+      const cursoData = doc.data();
+      if (cursoData.d_nombre === curso_Name) {
+        cursoID = doc.id;
+        console.log("Curso Id: ", cursoID);
+        refreshPage(cursoID);
+      }
+    });
+    
+  };
+  
   useEffect(() => {
     getCameraPermission();
   }, []);
@@ -422,9 +441,11 @@ function Classroom({ navigation, route }) {
     setCameraPermission(status === 'granted');
   };
 
-  const refreshPage = () => {
+  const refreshPage = (cursoID) => {
     //cambiar url por direccion ip
-    fetch('http://192.168.1.49:5000')
+    console.log("Curso ID procesado: ", cursoID);
+    //fetch(`http://192.168.1.49:5000?cursoID=${cursoID}`)
+    fetch(`https://gentle-fjord-50254.herokuapp.com?cursoID=${cursoID}`)
       .then(response => {
         if (response.ok) {
           console.log('La página se refrescó exitosamente.');
@@ -451,9 +472,8 @@ function Classroom({ navigation, route }) {
     const blob = await response.blob();
     const snapshot = await uploadBytes(imageRef, blob);
     console.log('Imagen subida con éxito a Firebase Storage:', snapshot.ref.fullPath);
-    // Redirigir a la URL http://127.0.0.1:5000
     console.log('Analizando caras')
-    refreshPage();
+    getDocumentId();
     console.log('termino analisis')
 
   };
