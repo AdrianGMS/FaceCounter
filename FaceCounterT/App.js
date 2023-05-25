@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Button, View, Text, Image, ScrollView, StyleSheet, TextInput, Pressable, Dimensions, onPress, ImageBackground } from 'react-native';
+import { Button, View, Text, Image, ScrollView, StyleSheet, TextInput, Pressable, Dimensions, onPress, ImageBackground, Alert } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer';
 import { NavigationContainer } from '@react-navigation/native';
 import MenuButtonItem from './components/MenuButtonItem';
@@ -13,8 +13,8 @@ import { useNavigation } from '@react-navigation/native';
 
 // Import the functions you need from the Firebase SDKs
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, doc, getDoc, query, where, getDocs } from 'firebase/firestore';
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { getFirestore, collection, doc, getDoc, query, where, getDocs, updateDoc } from 'firebase/firestore';
+import { getAuth, updatePassword, EmailAuthProvider, reauthenticateWithCredential, signOut, signInWithEmailAndPassword } from 'firebase/auth';
 import { getStorage, ref, uploadBytes } from 'firebase/storage';
 
 // TODO: Replace the following with your app's Firebase project configuration
@@ -34,9 +34,7 @@ const auth = getAuth(app);
 const storage = getStorage(app);
 // Render the app component
 
-console.log("Conexión exitosa:", db);
 
-let profesorInfo = null;
 
 const image = { uri: "https://i.ibb.co/MRhBzY9/Login.png" };
 const image2 = { uri: "https://i.ibb.co/kBsHbfc/Fondo.png"}; 
@@ -85,18 +83,20 @@ const styles = StyleSheet.create({
 
   },
   //Profile section
-  inputprofile:{
+  inputprofile: {
     backgroundColor: 'black',
-    fontSize:18,
-    color:'white',
-    width:"92%",
-    height:50,
-    borderRadius:15,
+    borderColor: 'red',
+    borderWidth: 2,
+    color: 'white',
+    fontSize: 18,
+    width: '92%',
+    height: 50,
+    borderRadius: 15,
     padding: 10,
-    margin: 15
+    margin: 15,
   },
   buttonprofile:{
-    marginTop: 200,
+    marginTop: 50,
     paddingVertical: 12,
     paddingHorizontal: 32,
     borderRadius: 15,
@@ -263,40 +263,123 @@ const styles = StyleSheet.create({
   passwordInteraction:{
     flexDirection: "row",
     justifyContent: "center",
-    
-  
+  },
+  infoBox: {
+    width: 160,
+    height: 45,
+    backgroundColor: 'black',
+    borderRadius: 5,
+    borderWidth: 2,
+    borderColor: 'red',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 1,
+  },
+  infoText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center'
+  },
+  arrowContainer: {
+    width: 30,
+    height: 30,
+    backgroundColor: 'black',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 10
   }
 
 });
 
 
-function PasswordScreen({ navigation }) {
+function PasswordScreen({ navigation, route }) {
+  const { profesorData } = route.params;
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [repeatPassword, setRepeatPassword] = useState('');
+
+  const checkPassword = (currentPassword, newPassword, repeatPassword) => {
+    if (newPassword === repeatPassword) {
+      changePassword(currentPassword, newPassword);
+    } else {
+      Alert.alert('Error', 'Las contraseñas no son iguales');
+    }
+  };
+
+  const changePassword = (currentPassword, newPassword) => {
+    const user = getAuth().currentUser;
+    console.log('Contraseña actual: ', profesorData.d_contrasena);
+    
+    if (user) {
+      const credentials = EmailAuthProvider.credential(user.email, currentPassword);
+
+      // Verificar la contraseña anterior antes de cambiarla
+      reauthenticateWithCredential(user, credentials)
+        .then(() => {
+          // La contraseña anterior es válida, proceder con el cambio de contraseña
+          updatePassword(user, newPassword)
+            .then(async () => {
+              console.log('Contraseña de Firebase Authentication cambiada correctamente');
+              // Actualizar la contraseña en profesorData en Firestore
+              const profesorDoc = doc(db, "profesor", user.uid);
+              await updateDoc(profesorDoc, {
+                d_contrasena: newPassword
+              });
+              console.log('Contraseña de profesorData cambiada correctamente en Firestore');             
+            })
+            .catch((error) => {
+              console.log('Error al cambiar la contraseña:', error);
+            });
+        })
+        .catch((error) => {
+          console.log('Error de autenticación:', error);
+        });
+    }
+  };
+
   return (
     <View>
       <ImageBackground source={image2} resizeMode="stretch" style={styles.image}>
      </ImageBackground>
      <View style={styles.header}>
-        <Pressable onPress={() => navigation.navigate('Home')}>
+        <Pressable onPress={() => navigation.navigate('Home', { profesorData: profesorData })}>
           <MaterialIcons name="arrow-back" size={50} style={{ width: 55, height: 40 }} color="black" />
         </Pressable>
       </View>
      <Text style={styles.textprofile} >Contraseña Anterior</Text>
-      <TextInput style={styles.inputprofile}
-      placeholder='ContraseñaAnterior'/>
+      <TextInput
+        style={styles.inputprofile}
+        placeholder='ContraseñaAnterior'
+        placeholderTextColor='white'
+        value={currentPassword}
+        onChangeText={setCurrentPassword}
+        secureTextEntry/>
       <Text style={styles.textprofile}>Nueva Contraseña</Text>
-      <TextInput style={styles.inputprofile}
-      placeholder='ContraseñaNueva'/>
+      <TextInput
+        style={styles.inputprofile}
+        placeholder='ContraseñaNueva'
+        placeholderTextColor='white'
+        value={newPassword}
+        onChangeText={setNewPassword}
+        secureTextEntry/>
       <Text style={styles.textprofile}>Repita la Contraseña</Text>
-      <TextInput style={styles.inputprofile}
-      placeholder='Repitacontraseña'/>
+      <TextInput
+        style={styles.inputprofile}
+        placeholder='Repitacontraseña'
+        placeholderTextColor='white'
+        value={repeatPassword}
+        onChangeText={setRepeatPassword}
+        secureTextEntry/>
       <View style={styles.passwordInteraction}>
       <View style={styles.containerpassword}>
-      <Pressable style={styles.buttonpassword} onPress={() => navigation.navigate('Home')}>
+      <Pressable style={styles.buttonpassword} onPress={() => 
+        checkPassword(currentPassword,newPassword,repeatPassword)}>
         <Text style={styles.textbtn}>Aceptar</Text>
       </Pressable>
       </View>
       <View style={styles.containerpassword}>
-      <Pressable style={styles.buttonpassword} onPress={() => navigation.navigate('Home')}>
+      <Pressable style={styles.buttonpassword} onPress={() => navigation.navigate('Home', { profesorData: profesorData})}>
         <Text style={styles.textbtn}>Cancelar</Text>
       </Pressable>
       </View>
@@ -305,43 +388,94 @@ function PasswordScreen({ navigation }) {
     </View>
   );
 }
-function HelpScreen({ navigation }) {
+
+function HelpScreen({ navigation, route }) {
+  const { profesorData } = route.params;
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center'}}>
       <ImageBackground source={image2} resizeMode="stretch" style={styles.image}>
-     </ImageBackground>
-     <View style={styles.header}>
-        <Pressable onPress={() => navigation.navigate('Home')}>
-          <MaterialIcons name="arrow-back" size={50} style={{ width: 55, height: 40 }} color="black" />
-        </Pressable>
+      <View style={styles.header}>
+          <Pressable onPress={() => navigation.navigate('Home', { profesorData: profesorData })}>
+            <MaterialIcons name="arrow-back" size={50} style={{ width: 55, height: 40 }} color="black" />
+          </Pressable>
       </View>
-      <Text>AYUDA!</Text>
-      <Button 
-      onPress={() => navigation.goBack()}
-      title="Go back home"
-      />
+      </ImageBackground>
+      
+      
+      <View style={[styles.infoBox, { marginBottom: 10 }]}>
+        <Text style={styles.infoText}>Busca tu aula</Text>
+      </View>
+      <View style={styles.arrowContainer}>
+        <MaterialIcons name="keyboard-arrow-down" size={30} color="white" />
+      </View>
+      
+      <View style={[styles.infoBox, { marginTop: 10, marginBottom: 10 }]}>
+        <Text style={styles.infoText}>Selecciona tu aula</Text>
+      </View>
+      <View style={styles.arrowContainer}>
+        <MaterialIcons name="keyboard-arrow-down" size={30} color="white" />
+      </View>
+      
+      <View style={[styles.infoBox, { marginTop: 10, marginBottom: 10 }]}>
+        <Text style={styles.infoText}>Toma una foto</Text>
+      </View>
+      <View style={styles.arrowContainer}>
+        <MaterialIcons name="keyboard-arrow-down" size={30} color="white" />
+      </View>
+      
+      <View style={[styles.infoBox, { marginTop: 10, marginBottom: 10 }]}>
+        <Text style={styles.infoText}>Sube la foto</Text>
+      </View>
+      <View style={styles.arrowContainer}>
+        <MaterialIcons name="keyboard-arrow-down" size={30} color="white" />
+      </View>
+      
+      <View style={[styles.infoBox, { marginTop: 10 }]}>
+        <Text style={styles.infoText}>Listo, nos encargamos de la asistencia nosotros</Text>
+      </View>
     </View>
   );
 }
-function ProfileScreen({ navigation }) {
+
+
+
+function ProfileScreen({ navigation, route }) {
+  const { profesorData } = route.params;
+
   return (
     <View>
       <ImageBackground source={image2} resizeMode="stretch" style={styles.image}>
      </ImageBackground>
      
-      <Text style={styles.textprofile} >Nombres</Text>
-      <TextInput style={styles.inputprofile}
-      placeholder='Nombre'/>
+      <Text style={styles.textprofile}>Nombres</Text>
+      <TextInput
+        style={[styles.inputprofile]}
+        placeholder ={profesorData.d_nombre}
+        editable={false}
+        placeholderTextColor="white"
+      />
       <Text style={styles.textprofile}>Apellidos</Text>
-      <TextInput style={styles.inputprofile}
-      placeholder='Apellidos'/>
+      <TextInput
+        style={[styles.inputprofile]}
+        placeholder={profesorData.d_apellido}
+        editable={false}
+        placeholderTextColor="white"
+      />
       <Text style={styles.textprofile}>Email</Text>
-      <TextInput style={styles.inputprofile}
-      placeholder='Email'/>
+      <TextInput
+        style={[styles.inputprofile]}
+        placeholder={profesorData.d_correo}
+        editable={false}
+        placeholderTextColor="white"
+      />
       <Text style={styles.textprofile}>Numero Telefonico</Text>
-      <TextInput style={styles.inputprofile}
-      placeholder='Telefono'/>
-      <Pressable style={styles.buttonprofile} onPress={() => navigation.navigate('Home')}>
+      <TextInput
+        style={[styles.inputprofile]}
+        placeholder={profesorData.n_telefono}
+        editable={false}
+        placeholderTextColor="white"
+      />
+      <Pressable style={styles.buttonprofile} onPress={() => navigation.navigate('Home', { profesorData: profesorData })}>
       <Text style={styles.textbtn}>Volver</Text>
     </Pressable>
     </View>
@@ -504,6 +638,20 @@ function Classroom({ navigation, route }) {
   );
 }
 
+function LogoutScreen({ navigation, setProfesorData }) {
+  signOut()
+    .then(() => {
+      setProfesorData(null); // Restablecer profesorData a null
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'TabLoginScreen' }],
+      });
+    })
+    .catch((error) => {
+      console.log("Error al cerrar sesión:", error);
+    });
+}
+
 
 function TabLoginScreen({navigation, setProfesorData}) {
   const [email, setEmail] = useState('');
@@ -564,35 +712,36 @@ function TabLoginScreen({navigation, setProfesorData}) {
  );
 }
 
-const MenuItems = ({ navigation }) => {
+const MenuItems = ({ navigation, profesorData }) => {
   return(
     <DrawerContentScrollView
     style = {styles.menuContainer}>
       <Image source = {{uri:"https://i.ibb.co/9V3Y4qk/avatar.jpg"}}
       style = { styles.avatar }/>
-      <Text style = {styles.menuTitle}>aaaaaaaaaaa</Text>
+      <Text style = {styles.menuTitle}></Text>
       <Text style = {styles.email}>eeeeeeeeeeeee@email.com</Text>
       
       <MenuButtonItem
         image='https://i.ibb.co/R2Bqyf0/Home.png'
         text ="Home"
-        onPress={() => navigation.navigate('Home')}/>
+        onPress={() => navigation.navigate('Home', { profesorData: profesorData })}/>
         <MenuButtonItem
         image='https://i.ibb.co/pKZQsf8/Perfil.png'
         text ="Mi Perfil"
-        onPress={() => navigation.navigate('Mi Perfil')}/>
+        onPress={() => navigation.navigate('Mi Perfil', { profesorData: profesorData })}/>
         <MenuButtonItem
         image='https://i.ibb.co/CvPSX89/Ayuda.png'
         text ="Ayuda"
-        onPress={() => navigation.navigate('Ayuda')}/>
+        onPress={() => navigation.navigate('Ayuda', { profesorData: profesorData })}/>
         <MenuButtonItem
         image='https://i.ibb.co/qCmQ03M/Cambiar-contrase-a.png'
         text ="Cambiar contraseña"
-        onPress={() => navigation.navigate('Cambiar contraseña')}/>
+        onPress={() => navigation.navigate('Cambiar contraseña', { profesorData: profesorData })}/>
         <MenuButtonItem
         image='https://i.ibb.co/z2hvrff/cerrar-sesion.png'
         text ="Cerrar Sesión"
         onPress={() => navigation.navigate('Cerrar Sesión')}/>
+    
     </DrawerContentScrollView>
   )
 
@@ -605,8 +754,8 @@ export default function FaceCounterApp({}) {
   return (
     <NavigationContainer>
       <Drawer.Navigator
-       drawerContent={ (props) => <MenuItems { ...props}/>} 
        initialRouteName="Login"
+       drawerContent={ (props) => <MenuItems { ...props} profesorData={profesorData} />} 
        screenOptions={{
         headerTintColor: 'white',
         headerStyle: {
@@ -622,7 +771,7 @@ export default function FaceCounterApp({}) {
         <Drawer.Screen name="Mi Perfil" component={ProfileScreen} />
         <Drawer.Screen name="Ayuda" component={HelpScreen} />
         <Drawer.Screen name="Cambiar contraseña" component={PasswordScreen} />
-        <Drawer.Screen options={{headerShown: false}} name="Cerrar Sesión" component={TabLoginScreen} />
+        <Drawer.Screen options={{headerShown: false}} name="Cerrar Sesión" component={LogoutScreen} />
       </Drawer.Navigator>
     </NavigationContainer>
   )
