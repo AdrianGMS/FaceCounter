@@ -309,7 +309,6 @@ function PasswordScreen({ navigation, route }) {
 
   const changePassword = (currentPassword, newPassword) => {
     const user = getAuth().currentUser;
-    console.log('Contraseña actual: ', profesorData.d_contrasena);
     
     if (user) {
       const credentials = EmailAuthProvider.credential(user.email, currentPassword);
@@ -638,14 +637,16 @@ function Classroom({ navigation, route }) {
   );
 }
 
-function LogoutScreen({ navigation, setProfesorData }) {
-  signOut()
+function LogoutScreen({ navigation, setProfesorData, route }) {
+  const { profesorData } = route.params;
+  const user = getAuth();
+
+  console.log("Entre a logoutScreen");
+
+  signOut(user)
     .then(() => {
-      setProfesorData(null); // Restablecer profesorData a null
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'TabLoginScreen' }],
-      });
+      console.log("Sesion cerrada");
+      navigation.navigate('Login', {setProfesorData: setProfesorData});
     })
     .catch((error) => {
       console.log("Error al cerrar sesión:", error);
@@ -740,7 +741,7 @@ const MenuItems = ({ navigation, profesorData }) => {
         <MenuButtonItem
         image='https://i.ibb.co/z2hvrff/cerrar-sesion.png'
         text ="Cerrar Sesión"
-        onPress={() => navigation.navigate('Cerrar Sesión')}/>
+        onPress={() => navigation.navigate('Cerrar Sesión', { profesorData: profesorData })}/>
     
     </DrawerContentScrollView>
   )
