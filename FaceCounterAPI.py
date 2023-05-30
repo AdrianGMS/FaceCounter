@@ -60,7 +60,6 @@ def face_counter_api():
     # es donde se obtiene el ID del curso que se selecciona
     c_codigo_curso = "6OnWmcvdlM27usk2U68Q"
 
-    print("codigo: ", c_codigo_curso)
     def marcar_ausente_todos():
         alumnos_ref = db.collection('curso_alumno').where("c_codigo_curso", "==", c_codigo_curso)
         alumnos = alumnos_ref.get()
@@ -85,6 +84,7 @@ def face_counter_api():
 
     print("Procesando caras desconocidas")
     correct_recognitions = 0
+    error_recognitions = 0
     total_recognitions = 0
 
     marcar_ausente_todos()
@@ -106,6 +106,7 @@ def face_counter_api():
         
         else:
             continue
+        
         # Dibujar los cuadros y los nombres en la imagen
         for face_encoding, face_location in zip(encoding, locations):
             results = face_recognition.compare_faces(known_faces, face_encoding, TOLERANCE)
@@ -145,6 +146,9 @@ def face_counter_api():
                         alumno_ref.update({
                             'd_fecha': datetime.now().strftime("%d de %B de %Y, %H:%M:%S UTC-5")
                         })
+            
+            else:
+                error_recognitions += 1
 
             
             total_recognitions += 1
@@ -156,7 +160,11 @@ def face_counter_api():
 
         print(f"Imagen subida exitosamente a Firebase Storage")
 
-    accuracy = correct_recognitions / total_recognitions * 100
+    accuracy = (correct_recognitions - error_recognitions) / total_recognitions * 100
+    print("error_recognitions: ", error_recognitions)
+    print("correct_recognitions: ", correct_recognitions)
+    print("total_recognitions: ", total_recognitions)
+    
     print(f"Accuracy: {accuracy:.2f}%")
 
     # Obtener los registros de asistencia para el curso
