@@ -576,7 +576,6 @@ function Classroom({ navigation, route }) {
   const refreshPage = (cursoID) => {
     //cambiar url por direccion ip
     console.log("Curso ID procesado: ", cursoID);
-    //fetch(`http://192.168.1.49:5000?cursoID=${cursoID}`)
     fetch(`https://gentle-fjord-50254.herokuapp.com?cursoID=${cursoID}`)
       .then(response => {
         if (response.ok) {
