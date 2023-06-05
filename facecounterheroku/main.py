@@ -94,7 +94,7 @@ def face_counter_api():
             image = Image.open(io.BytesIO(img_data))
 
             # Redimensionar la imagen proporcionalmente usando ImageOps.fit()
-            image = ImageOps.fit(image, (int(image.size[0]*0.15), int(image.size[1]*0.15)))
+            image = ImageOps.fit(image, (int(image.size[0]*0.5), int(image.size[1]*0.5)))
             image = np.asarray(image)
             # Detectar las caras en la imagen
             locations = face_recognition.face_locations(image, model=MODEL)

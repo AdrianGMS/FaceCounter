@@ -86,6 +86,7 @@ def face_counter_api():
     correct_recognitions = 0
     error_recognitions = 0
     total_recognitions = 0
+    total_Faces = 0
 
     marcar_ausente_todos()
     # Recorrer los blobs en la carpeta y cargar las imágenes en memoria
@@ -97,22 +98,25 @@ def face_counter_api():
             image = Image.open(io.BytesIO(img_data))
 
             # Redimensionar la imagen proporcionalmente usando ImageOps.fit()
-            image = ImageOps.fit(image, (int(image.size[0]*0.15), int(image.size[1]*0.15)))
+            image = ImageOps.fit(image, (int(image.size[0]*0.5), int(image.size[1]*0.5)))
             image = np.asarray(image)
             # Detectar las caras en la imagen
             locations = face_recognition.face_locations(image, model=MODEL)
             encoding = face_recognition.face_encodings(image, locations)
             image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            total_Faces = len(locations)
         
         else:
             continue
+
+        print(total_Faces)
         
         # Dibujar los cuadros y los nombres en la imagen
         for face_encoding, face_location in zip(encoding, locations):
-            results = face_recognition.compare_faces(known_faces, face_encoding, TOLERANCE)
-            match = None
-            if True in results:
-                match = known_names[results.index(True)]
+            face_distances = face_recognition.face_distance(known_faces, face_encoding)
+            best_match_index = np.argmin(face_distances)
+            if face_distances[best_match_index] <= TOLERANCE:
+                match = known_names[best_match_index]
                 print(f"Match Found: {match}")
                 # Actualizar la base de datos
                 correct_recognitions += 1
@@ -151,7 +155,8 @@ def face_counter_api():
                 error_recognitions += 1
 
             
-            total_recognitions += 1
+        total_recognitions += len(locations)
+        print("Reconocimientos totales: ", total_recognitions)
 
         # Sube la imagen a Firebase Storage
         blob = bucket.blob('Registro de fotografias/' + str(uuid.uuid4()) + '.jpg')
