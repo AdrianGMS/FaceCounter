@@ -102,14 +102,21 @@ data = [
     {'d_nombre': 'GonzaloC', 'd_codigo': 'CCA009', 'd_urlvideo': 'https://firebasestorage.googleapis.com/v0/b/facecounter-7bdad.appspot.com/o/Videos%20caras%2FGonzaloC.mp4?alt=media&token=b6fd05cd-e9a9-44c6-9cde-5695d838998e'},
     {'d_nombre': 'EstebanC', 'd_codigo': 'CCA010', 'd_urlvideo': 'https://firebasestorage.googleapis.com/v0/b/facecounter-7bdad.appspot.com/o/Videos%20caras%2FEstebanC.mp4?alt=media&token=6c15cd64-6c54-49c5-9e54-2e87187cdcb7'},
     {'d_nombre': 'DavidN', 'd_codigo': 'CCA011', 'd_urlvideo': 'https://firebasestorage.googleapis.com/v0/b/facecounter-7bdad.appspot.com/o/Videos%20caras%2FDavidN.mp4?alt=media&token=485d9ada-24bb-430e-84a9-c539b7904998'},
-    {'d_nombre': 'AbigailG', 'd_codigo': 'CCA012', 'd_urlvideo': 'https://firebasestorage.googleapis.com/v0/b/facecounter-7bdad.appspot.com/o/Videos%20caras%2FAbigailG.mp4?alt=media&token=94c78c71-6393-475e-99a2-16a9bafb0088'}
+    {'d_nombre': 'AbigailG', 'd_codigo': 'CCA012', 'd_urlvideo': 'https://firebasestorage.googleapis.com/v0/b/facecounter-7bdad.appspot.com/o/Videos%20caras%2FAbigailG.mp4?alt=media&token=94c78c71-6393-475e-99a2-16a9bafb0088'},
+    {'d_nombre': 'CamilaG', 'd_codigo': 'MOD001', 'd_urlvideo': 'https://firebasestorage.googleapis.com/v0/b/facecounter-7bdad.appspot.com/o/Videos%20caras%2FCamilaG.mp4?alt=media&token=bb87ee88-1bd2-4f0e-a9ca-4efe43dc3e55'},
+    {'d_nombre': 'BrigitteD', 'd_codigo': 'MOD002', 'd_urlvideo': 'https://firebasestorage.googleapis.com/v0/b/facecounter-7bdad.appspot.com/o/Videos%20caras%2FBrigitteD.mp4?alt=media&token=758518d6-ebed-4f7e-97cc-b9631f8a09e0'},
+    {'d_nombre': 'Carla', 'd_codigo': 'MOD003', 'd_urlvideo': 'https://firebasestorage.googleapis.com/v0/b/facecounter-7bdad.appspot.com/o/Videos%20caras%2FCarla.mp4?alt=media&token=fb04224a-607e-47d8-96b9-bfc17db84b55'},
+    {'d_nombre': 'DianaT', 'd_codigo': 'MOD004', 'd_urlvideo': 'https://firebasestorage.googleapis.com/v0/b/facecounter-7bdad.appspot.com/o/Videos%20caras%2FDianaT.mp4?alt=media&token=2f5f7ead-b18c-476e-9088-16ce3c56ad5c'},
+    {'d_nombre': 'AntonellaL', 'd_codigo': 'MOD005', 'd_urlvideo': 'https://firebasestorage.googleapis.com/v0/b/facecounter-7bdad.appspot.com/o/Videos%20caras%2FAntonellaL.mp4?alt=media&token=57e84f42-6fbe-4b3f-b029-84ec512314e5'},
+    {'d_nombre': 'EsperanzaB', 'd_codigo': 'MOD006', 'd_urlvideo': 'https://firebasestorage.googleapis.com/v0/b/facecounter-7bdad.appspot.com/o/Videos%20caras%2FEsperanzaB.mp4?alt=media&token=9b7b0d80-e145-4dc2-a079-1b0188ad4d5e'},
+    {'d_nombre': 'JoaquinM', 'd_codigo': 'MOD007', 'd_urlvideo': 'https://firebasestorage.googleapis.com/v0/b/facecounter-7bdad.appspot.com/o/Videos%20caras%2FJoaquinM.mp4?alt=media&token=0f429332-f29a-49ca-987a-eee5942f6e89'},
+    {'d_nombre': 'RominaS', 'd_codigo': 'MOD008', 'd_urlvideo': 'https://firebasestorage.googleapis.com/v0/b/facecounter-7bdad.appspot.com/o/Videos%20caras%2FRominaS.mp4?alt=media&token=1c65ce53-71dd-4b92-a910-98ce3f7f2547'}
 ]
 
 
 for alumno_data in data:
     doc_ref = db.collection('alumno').document()
     batch.set(doc_ref, alumno_data)
-
 '''
 
 ###################################################################
@@ -205,6 +212,48 @@ for curso_alumno in curso_alumnos:
     doc_ref = db.collection('curso_alumno').document()
     doc_ref.set(curso_alumno)
 '''
+
+# Inscribir un alumno especifico en un CURSO especifico
+'''
+alumno_ref = db.collection('alumno')
+curso_ref = db.collection('curso')
+
+# Obtener los datos del alumno específico
+d_nombre_alumno = "Ake"  # Nombre del alumno a agregar
+d_codigo_alumno = "qOkp5FPsvTTxBdL9p2CF"  # ID del alumno a agregar
+d_codigo = "DEF191" # Codigo del alumno
+
+# ID del curso específico
+c_codigo_curso = "guD9sBHBQpJ11WmTzTKb"
+
+# Obtener el documento del curso específico
+curso_doc = curso_ref.document(c_codigo_curso).get()
+
+if curso_doc.exists:
+    curso_data = curso_doc.to_dict()
+
+    # Nombre del curso específico
+    d_nombre_curso = "Retail y Ventas"
+
+    # Crear el diccionario de datos del documento curso_alumno
+    curso_alumno = {
+        'c_codigo_alumno': d_codigo_alumno,
+        'c_codigo_curso': c_codigo_curso,
+        'd_nombre_curso': d_nombre_curso,
+        'd_nombre': d_nombre_alumno,
+        'd_codigo': d_codigo,
+        'd_asistencia': 'Ausente',
+        'd_modificacion': 'Automático',
+        'd_fecha': datetime.now()
+    }
+
+    # Agregar el documento curso_alumno a la colección curso_alumno
+    doc_ref = db.collection('curso_alumno').document()
+    doc_ref.set(curso_alumno)
+else:
+    print("El curso especificado no existe en la base de datos.")
+'''
+
 
 # Ejecutar el batch para crear los documentos
 batch.commit()
