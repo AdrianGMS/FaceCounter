@@ -15,7 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, doc, getDoc, query, where, getDocs, updateDoc } from 'firebase/firestore';
 import { getAuth, updatePassword, EmailAuthProvider, reauthenticateWithCredential, signOut, signInWithEmailAndPassword } from 'firebase/auth';
-import { getStorage, ref, uploadBytes } from 'firebase/storage';
+import { getStorage, ref, uploadBytes, listAll, deleteObject } from 'firebase/storage';
 
 // TODO: Replace the following with your app's Firebase project configuration
 const firebaseConfig = {
@@ -598,6 +598,10 @@ function Classroom({ navigation, route }) {
     const uri = assets[0].uri;
     console.log(uri);
     setImageUri(uri);
+    const imageFolderRef = ref(storage, 'Fotos Subidas/');
+    const imageFolderContents = await listAll(imageFolderRef);
+    const deletePromises = imageFolderContents.items.map((item) => deleteObject(item));
+    await Promise.all(deletePromises);
     const imageRef = ref(storage, 'Fotos Subidas/' + Date.now() + '.jpg');
     const response = await fetch(uri);
     const blob = await response.blob();
@@ -719,7 +723,6 @@ const MenuItems = ({ navigation, profesorData }) => {
       <Image source = {{uri:"https://i.ibb.co/9V3Y4qk/avatar.jpg"}}
       style = { styles.avatar }/>
       <Text style = {styles.menuTitle}></Text>
-      <Text style = {styles.email}>eeeeeeeeeeeee@email.com</Text>
       
       <MenuButtonItem
         image='https://i.ibb.co/R2Bqyf0/Home.png'

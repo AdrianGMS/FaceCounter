@@ -36,7 +36,6 @@ firebase_admin.initialize_app(cred, {'storageBucket': 'facecounter-7bdad.appspot
 @app.route("/")
 def face_counter_api():
     app1 = firebase_admin.get_app()
-    print(app1.name)
 
     # Get a reference to the Firestore database
     db = firestore.client()
@@ -57,7 +56,6 @@ def face_counter_api():
 
     # Establecer el código del curso
     c_codigo_curso = request.args.get('cursoID')
-    print("codigo: ", c_codigo_curso)
     def marcar_ausente_todos():
         alumnos_ref = db.collection('curso_alumno').where("c_codigo_curso", "==", c_codigo_curso)
         alumnos = alumnos_ref.get()
@@ -67,7 +65,6 @@ def face_counter_api():
             alumno_ref.update({'d_modificacion': 'Automatico'})
 
 
-    print("Cargando caras conocidas desde el archivo 'faces.dat'")
     # Descarga el archivo faces.dat como bytes desde Firebase Storage
     blob_dat = bucket.blob('faces.dat')
     faces_data = blob_dat.download_as_string()
@@ -80,10 +77,6 @@ def face_counter_api():
     known_faces = data['known_faces']
     known_names = data['known_names']
 
-    print("Procesando caras desconocidas")
-    correct_recognitions = 0
-    total_recognitions = 0
-
     marcar_ausente_todos()
     # Recorrer los blobs en la carpeta y cargar las imágenes en memoria
     for blob in blobs:
@@ -94,7 +87,7 @@ def face_counter_api():
             image = Image.open(io.BytesIO(img_data))
 
             # Redimensionar la imagen proporcionalmente usando ImageOps.fit()
-            image = ImageOps.fit(image, (int(image.size[0]*0.5), int(image.size[1]*0.5)))
+            image = ImageOps.fit(image, (int(image.size[0]*0.15), int(image.size[1]*0.15)))
             image = np.asarray(image)
             # Detectar las caras en la imagen
             locations = face_recognition.face_locations(image, model=MODEL)
@@ -109,9 +102,7 @@ def face_counter_api():
             match = None
             if True in results:
                 match = known_names[results.index(True)]
-                print(f"Match Found: {match}")
                 # Actualizar la base de datos
-                correct_recognitions += 1
 
                 top_left = (face_location[3], face_location[0])
                 bottom_right = (face_location[1], face_location[2])
@@ -143,18 +134,10 @@ def face_counter_api():
                             'd_fecha': datetime.now().strftime("%d de %B de %Y, %H:%M:%S UTC-5")
                         })
 
-            
-            total_recognitions += 1
-
         # Sube la imagen a Firebase Storage
         blob = bucket.blob('Registro de fotografias/' + str(uuid.uuid4()) + '.jpg')
         _, buffer = cv2.imencode('.jpg', image)
         blob.upload_from_string(buffer.tobytes(), content_type='image/jpeg')
-
-        print(f"Imagen subida exitosamente a Firebase Storage")
-
-    accuracy = correct_recognitions / total_recognitions * 100
-    print(f"Accuracy: {accuracy:.2f}%")
 
     # Obtener los registros de asistencia para el curso
     results = []
@@ -188,7 +171,6 @@ def face_counter_api():
     blob_csv = bucket.blob(filename_csv)
     blob_csv.upload_from_string(content_csv)
 
-    print(f"Archivos de asistencia subidos exitosamente a Firebase Storage")
     return "Reconocimiento realizado"
 
 if __name__ == "__main__":
