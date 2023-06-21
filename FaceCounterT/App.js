@@ -275,6 +275,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 1,
   },
+  infoBox2: {
+    width: 160,
+    height: 75,
+    backgroundColor: 'black',
+    borderRadius: 5,
+    borderWidth: 2,
+    borderColor: 'red',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 1,
+  },
   infoText: {
     color: 'white',
     fontSize: 16,
@@ -429,7 +440,7 @@ function HelpScreen({ navigation, route }) {
         <MaterialIcons name="keyboard-arrow-down" size={30} color="white" />
       </View>
       
-      <View style={[styles.infoBox, { marginTop: 10 }]}>
+      <View style={[styles.infoBox2, { marginTop: 10 }]}>
         <Text style={styles.infoText}>Listo, nos encargamos de la asistencia nosotros</Text>
       </View>
     </View>
@@ -574,7 +585,7 @@ function Classroom({ navigation, route }) {
   };
 
   const refreshPage = (cursoID) => {
-    //cambiar url por direccion ip
+    //cambiar url
     console.log("Curso ID procesado: ", cursoID);
     fetch(`https://gentle-fjord-50254.herokuapp.com?cursoID=${cursoID}`)
       .then(response => {
@@ -709,9 +720,7 @@ function TabLoginScreen({navigation, setProfesorData}) {
     <Pressable style={styles.button} onPress={handleLogin}>
       <Text style={styles.text}>Ingresar</Text>
     </Pressable>
-    <Pressable onPress={() => navigation.navigate('Cambiar contraseña')}>
-      <Text style={styles.subtitle}>¿Has olvidado tu contraseña?</Text>
-    </Pressable>
+    
   </View>
  );
 }
