@@ -587,7 +587,7 @@ function Classroom({ navigation, route }) {
   const refreshPage = (cursoID) => {
     //cambiar url
     console.log("Curso ID procesado: ", cursoID);
-    fetch(`https://gentle-fjord-50254.herokuapp.com?cursoID=${cursoID}`)
+    fetch(`https://sleepy-falls-35481-727b36809260.herokuapp.com?cursoID=${cursoID}`)
       .then(response => {
         if (response.ok) {
           console.log('La página se refrescó exitosamente.');
